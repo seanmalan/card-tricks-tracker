@@ -367,6 +367,32 @@
   .checklist-section.active-focus .checklist { border-color: rgba(201,168,76,0.4); }
   .checklist-section.inactive-focus { opacity: 0.45; }
 
+  /* TWO-STEP SESSION MODAL */
+  .modal-step { display: none; }
+  .modal-step.active { display: block; }
+
+  .category-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0; }
+
+  .category-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .category-card:hover { border-color: var(--accent); background: rgba(201,168,76,0.06); }
+  .category-card.selected { border-color: var(--accent); background: rgba(201,168,76,0.1); }
+
+  .category-card .cat-icon { font-size: 28px; margin-bottom: 10px; color: var(--accent); opacity: 0.7; }
+  .category-card .cat-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .category-card .cat-sub { font-size: 11px; color: var(--text3); line-height: 1.5; }
+
+  .step-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .step-indicator { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
+
   /* PROGRESS BARS */
   .progress-bar { height: 4px; background: var(--surface3); border-radius: 2px; margin-top: 8px; overflow: hidden; }
   .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.4s ease; }
@@ -743,65 +769,86 @@
 <!-- MODAL: LOG SESSION -->
 <div class="modal-overlay" id="modal-session">
   <div class="modal">
-    <div class="modal-title">Log Practice <em>Session</em></div>
 
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:16px;">
-      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Session Timer</div>
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div id="modal-timer-display" style="font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--accent);letter-spacing:.06em;min-width:110px;">00:00:00</div>
-        <div id="modal-timer-status" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);flex:1;">Ready</div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-primary btn-sm" id="ms-start-btn"  onclick="msStart()">▶ Start</button>
-          <button class="btn btn-sm"             id="ms-pause-btn"  onclick="msPause()"  style="display:none;">⏸ Pause</button>
-          <button class="btn btn-sm"             id="ms-resume-btn" onclick="msResume()" style="display:none;">▶ Resume</button>
-          <button class="btn btn-sm"             id="ms-stop-btn"   onclick="msStop()"   style="display:none;border-color:var(--red);color:var(--red);">■ Stop</button>
+    <!-- STEP 1: Category -->
+    <div class="modal-step active" id="session-step-1">
+      <div class="modal-title">Log Practice <em>Session</em></div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:18px;">What are you practicing today?</p>
+      <div class="category-cards">
+        <div class="category-card" id="cat-moves" onclick="selectSessionCategory('moves')">
+          <div class="cat-icon">✦</div>
+          <div class="cat-title">Moves &amp; Sleights</div>
+          <div class="cat-sub">Sleights, controls, shuffles, palming</div>
+        </div>
+        <div class="category-card" id="cat-tricks" onclick="selectSessionCategory('tricks')">
+          <div class="cat-icon">◈</div>
+          <div class="cat-title">Tricks &amp; Routines</div>
+          <div class="cat-sub">Full tricks, routines, performance sets</div>
         </div>
       </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="form-group"><label>Date</label><input type="date" id="s-date"></div>
-      <div class="form-group"><label>Duration (minutes)</label><input type="number" id="s-duration" placeholder="e.g. 45 — or use timer" min="1"></div>
-    </div>
-    <div class="form-group"><label>Session Title</label><input type="text" id="s-title" placeholder="e.g. Double Lift drills, Ambitious Card work…"></div>
-    <div class="form-group">
-      <label>Focus Area</label>
-      <select id="s-focus" onchange="onFocusChange(this.value)">
-        <option value="">— General practice —</option>
-        <option>Sleight of Hand</option>
-        <option>Controls &amp; Breaks</option>
-        <option>False Shuffles / Cuts</option>
-        <option>Forces</option>
-        <option>Palming</option>
-        <option>Specific Tricks</option>
-        <option>Full Routine Run-through</option>
-        <option>Performance Practice</option>
-        <option>Cardistry</option>
-      </select>
-    </div>
-    <div class="form-group checklist-section" id="section-moves">
-      <label>Moves Practiced</label>
-      <div class="checklist" id="s-moves-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No moves in your library yet.</div></div>
-    </div>
-    <div class="form-group checklist-section" id="section-tricks">
-      <label>Tricks Practiced</label>
-      <div class="checklist" id="s-tricks-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No tricks in your library yet.</div></div>
-    </div>
-    <div class="form-group"><label>Notes</label><textarea id="s-notes" placeholder="What went well? What needs more work? Any breakthroughs?"></textarea></div>
-    <div class="form-group">
-      <label>Session Quality</label>
-      <div class="star-rating" id="s-rating" data-val="0">
-        <span class="star" data-v="1" onclick="setRating('s-rating',1)">★</span>
-        <span class="star" data-v="2" onclick="setRating('s-rating',2)">★</span>
-        <span class="star" data-v="3" onclick="setRating('s-rating',3)">★</span>
-        <span class="star" data-v="4" onclick="setRating('s-rating',4)">★</span>
-        <span class="star" data-v="5" onclick="setRating('s-rating',5)">★</span>
+      <div class="modal-footer">
+        <button class="btn" onclick="msReset();closeModal('modal-session')">Cancel</button>
+        <button class="btn btn-primary" id="step1-next-btn" onclick="goToSessionStep2()" disabled style="opacity:0.4;cursor:not-allowed">Next →</button>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="msReset();closeModal('modal-session')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveSession()">Save Session</button>
+
+    <!-- STEP 2: Details -->
+    <div class="modal-step" id="session-step-2">
+      <div class="step-nav">
+        <button class="btn btn-sm" onclick="goToSessionStep1()">← Back</button>
+        <span class="step-indicator" id="step2-category-label">Moves &amp; Sleights</span>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Session Timer</div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div id="modal-timer-display" style="font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--accent);letter-spacing:.06em;min-width:110px;">00:00:00</div>
+          <div id="modal-timer-status" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);flex:1;">Ready</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-primary btn-sm" id="ms-start-btn"  onclick="msStart()">▶ Start</button>
+            <button class="btn btn-sm"             id="ms-pause-btn"  onclick="msPause()"  style="display:none;">⏸ Pause</button>
+            <button class="btn btn-sm"             id="ms-resume-btn" onclick="msResume()" style="display:none;">▶ Resume</button>
+            <button class="btn btn-sm"             id="ms-stop-btn"   onclick="msStop()"   style="display:none;border-color:var(--red);color:var(--red);">■ Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group"><label>Date</label><input type="date" id="s-date"></div>
+        <div class="form-group"><label>Duration (minutes)</label><input type="number" id="s-duration" placeholder="e.g. 45 — or use timer" min="1"></div>
+      </div>
+      <div class="form-group"><label>Session Title</label><input type="text" id="s-title" placeholder="e.g. Double Lift drills, Ambitious Card work…"></div>
+      <div class="form-group">
+        <label>Focus Area</label>
+        <select id="s-focus" onchange="onFocusChange(this.value)">
+          <option value="">— Select focus —</option>
+        </select>
+      </div>
+      <div class="form-group checklist-section" id="section-moves">
+        <label>Moves Practiced</label>
+        <div class="checklist" id="s-moves-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No moves in your library yet.</div></div>
+      </div>
+      <div class="form-group checklist-section" id="section-tricks">
+        <label>Tricks Practiced</label>
+        <div class="checklist" id="s-tricks-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No tricks in your library yet.</div></div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea id="s-notes" placeholder="What went well? What needs more work? Any breakthroughs?"></textarea></div>
+      <div class="form-group">
+        <label>Session Quality</label>
+        <div class="star-rating" id="s-rating" data-val="0">
+          <span class="star" data-v="1" onclick="setRating('s-rating',1)">★</span>
+          <span class="star" data-v="2" onclick="setRating('s-rating',2)">★</span>
+          <span class="star" data-v="3" onclick="setRating('s-rating',3)">★</span>
+          <span class="star" data-v="4" onclick="setRating('s-rating',4)">★</span>
+          <span class="star" data-v="5" onclick="setRating('s-rating',5)">★</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="msReset();closeModal('modal-session')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSession()">Save Session</button>
+      </div>
     </div>
+
   </div>
 </div>
 
@@ -953,14 +1000,68 @@ function nav(page) {
 // ---- MODAL ----
 function openModal(id) {
   if (id === 'modal-session') {
-    document.getElementById('s-date').value = new Date().toISOString().slice(0,10);
-    setRating('s-rating', 0);
-    msReset();
-    populateSessionChecklists();
+    goToSessionStep1();
   }
   if (id === 'modal-move')  clearMoveForm();
   if (id === 'modal-trick') clearTrickForm();
   document.getElementById(id).classList.add('open');
+}
+
+// ---- TWO-STEP SESSION MODAL ----
+let sessionCategory = null;
+
+const FOCUS_OPTIONS = {
+  moves:  ['Sleight of Hand','Controls & Breaks','False Shuffles / Cuts','Forces','Palming','Cardistry'],
+  tricks: ['Specific Tricks','Full Routine Run-through','Performance Practice'],
+};
+
+function goToSessionStep1() {
+  sessionCategory = null;
+  document.getElementById('session-step-1').classList.add('active');
+  document.getElementById('session-step-2').classList.remove('active');
+  document.getElementById('cat-moves').classList.remove('selected');
+  document.getElementById('cat-tricks').classList.remove('selected');
+  const nextBtn = document.getElementById('step1-next-btn');
+  nextBtn.disabled = true;
+  nextBtn.style.opacity = '0.4';
+  nextBtn.style.cursor = 'not-allowed';
+  msReset();
+}
+
+function selectSessionCategory(cat) {
+  sessionCategory = cat;
+  document.getElementById('cat-moves').classList.toggle('selected', cat === 'moves');
+  document.getElementById('cat-tricks').classList.toggle('selected', cat === 'tricks');
+  const nextBtn = document.getElementById('step1-next-btn');
+  nextBtn.disabled = false;
+  nextBtn.style.opacity = '1';
+  nextBtn.style.cursor = 'pointer';
+}
+
+function goToSessionStep2() {
+  if (!sessionCategory) return;
+
+  // Populate focus dropdown for this category
+  const focusSelect = document.getElementById('s-focus');
+  focusSelect.innerHTML = '<option value="">— Select focus —</option>' +
+    FOCUS_OPTIONS[sessionCategory].map(o => `<option>${o}</option>`).join('');
+
+  // Show/hide checklists based on category
+  const movesSection  = document.getElementById('section-moves');
+  const tricksSection = document.getElementById('section-tricks');
+  movesSection.style.display  = sessionCategory === 'tricks' ? 'none' : '';
+  tricksSection.style.display = sessionCategory === 'moves'  ? 'none' : '';
+
+  // Label + reset
+  document.getElementById('step2-category-label').textContent =
+    sessionCategory === 'moves' ? 'Moves & Sleights' : 'Tricks & Routines';
+  document.getElementById('s-date').value = new Date().toISOString().slice(0, 10);
+  setRating('s-rating', 0);
+  onFocusChange('');
+  populateSessionChecklists();
+
+  document.getElementById('session-step-1').classList.remove('active');
+  document.getElementById('session-step-2').classList.add('active');
 }
 
 function populateSessionChecklists() {
@@ -999,20 +1100,15 @@ function getCheckedIds(listId) {
     .map(el => parseInt(el.dataset.id));
 }
 
-const FOCUS_MOVES  = new Set(['Sleight of Hand','Controls & Breaks','False Shuffles / Cuts','Forces','Palming','Cardistry']);
-const FOCUS_TRICKS = new Set(['Specific Tricks','Full Routine Run-through','Performance Practice']);
-
 function onFocusChange(val) {
   const movesSection  = document.getElementById('section-moves');
   const tricksSection = document.getElementById('section-tricks');
   movesSection.classList.remove('active-focus','inactive-focus');
   tricksSection.classList.remove('active-focus','inactive-focus');
-  if (FOCUS_MOVES.has(val)) {
+  if (val && sessionCategory === 'moves') {
     movesSection.classList.add('active-focus');
-    tricksSection.classList.add('inactive-focus');
-  } else if (FOCUS_TRICKS.has(val)) {
+  } else if (val && sessionCategory === 'tricks') {
     tricksSection.classList.add('active-focus');
-    movesSection.classList.add('inactive-focus');
   }
 }
 
@@ -1054,7 +1150,6 @@ async function saveSession() {
   });
   closeModal('modal-session');
   resetSessionForm();
-  msReset();
   await loadAll();
 }
 
@@ -1063,10 +1158,12 @@ function resetSessionForm() {
   document.getElementById('s-focus').value = '';
   onFocusChange('');
   setRating('s-rating', 0);
+  msReset();
   document.querySelectorAll('#s-moves-list .check-item, #s-tricks-list .check-item').forEach(el => {
     el.classList.remove('selected');
     el.querySelector('.check-icon').textContent = '☐';
   });
+  goToSessionStep1();
 }
 
 async function deleteSession(id) {
