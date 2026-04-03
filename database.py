@@ -71,6 +71,26 @@ def init_db():
     """)
 
     c.execute("""
+        CREATE TABLE IF NOT EXISTS session_moves (
+            session_id INTEGER NOT NULL,
+            move_id INTEGER NOT NULL,
+            PRIMARY KEY (session_id, move_id),
+            FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+            FOREIGN KEY (move_id) REFERENCES moves(id) ON DELETE CASCADE
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS session_tricks (
+            session_id INTEGER NOT NULL,
+            trick_id INTEGER NOT NULL,
+            PRIMARY KEY (session_id, trick_id),
+            FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+            FOREIGN KEY (trick_id) REFERENCES tricks(id) ON DELETE CASCADE
+        )
+    """)
+
+    c.execute("""
         CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
@@ -78,6 +98,13 @@ def init_db():
     """)
 
     c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('brush_up_days', '14')")
+
+    # Migrate: add last_practiced and practice_count to moves if not present
+    for col, definition in [("last_practiced", "TEXT"), ("practice_count", "INTEGER DEFAULT 0")]:
+        try:
+            c.execute(f"ALTER TABLE moves ADD COLUMN {col} {definition}")
+        except sqlite3.OperationalError:
+            pass
 
     conn.commit()
     conn.close()
@@ -112,30 +139,66 @@ def set_setting(key, value):
 def get_sessions():
     conn = get_connection()
     rows = conn.execute("SELECT * FROM sessions ORDER BY date DESC, id DESC").fetchall()
+    result = []
+    for row in rows:
+        s = dict(row)
+        s["linked_moves"] = rows_to_list(conn.execute(
+            "SELECT m.id, m.name, m.category FROM moves m "
+            "JOIN session_moves sm ON m.id = sm.move_id WHERE sm.session_id = ?",
+            (s["id"],)
+        ).fetchall())
+        s["linked_tricks"] = rows_to_list(conn.execute(
+            "SELECT t.id, t.name, t.status FROM tricks t "
+            "JOIN session_tricks st ON t.id = st.trick_id WHERE st.session_id = ?",
+            (s["id"],)
+        ).fetchall())
+        result.append(s)
     conn.close()
-    return rows_to_list(rows)
+    return result
 
 def create_session(data):
     conn = get_connection()
-    conn.execute(
-        "INSERT INTO sessions (date, duration_mins, title, focus, moves_practiced, notes, rating, created_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    today = date.today().isoformat()
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO sessions (date, duration_mins, title, focus, notes, rating, created_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
         (
             data["date"],
             data.get("duration", 0),
             data.get("title") or "Practice Session",
             data.get("focus", ""),
-            data.get("moves_practiced", ""),
             data.get("notes", ""),
             data.get("rating", 0),
-            date.today().isoformat(),
+            today,
         ),
     )
+    session_id = c.lastrowid
+
+    for move_id in data.get("move_ids", []):
+        c.execute("INSERT OR IGNORE INTO session_moves (session_id, move_id) VALUES (?, ?)", (session_id, move_id))
+        c.execute("UPDATE moves SET last_practiced=?, practice_count=COALESCE(practice_count,0)+1 WHERE id=?", (today, move_id))
+
+    for trick_id in data.get("trick_ids", []):
+        c.execute("INSERT OR IGNORE INTO session_tricks (session_id, trick_id) VALUES (?, ?)", (session_id, trick_id))
+        c.execute("UPDATE tricks SET last_practiced=?, practice_count=practice_count+1 WHERE id=?", (today, trick_id))
+
     conn.commit()
     conn.close()
 
 def delete_session(session_id):
     conn = get_connection()
+    # Junction rows cascade via FK, but also reverse the practice counts
+    move_ids = [r[0] for r in conn.execute(
+        "SELECT move_id FROM session_moves WHERE session_id = ?", (session_id,)
+    ).fetchall()]
+    trick_ids = [r[0] for r in conn.execute(
+        "SELECT trick_id FROM session_tricks WHERE session_id = ?", (session_id,)
+    ).fetchall()]
+    for mid in move_ids:
+        conn.execute("UPDATE moves SET practice_count=MAX(0, practice_count-1) WHERE id=?", (mid,))
+    for tid in trick_ids:
+        conn.execute("UPDATE tricks SET practice_count=MAX(0, practice_count-1) WHERE id=?", (tid,))
     conn.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
     conn.commit()
     conn.close()
