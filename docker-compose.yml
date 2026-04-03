@@ -1,0 +1,10 @@
+services:
+  card-tricks:
+    build: .
+    container_name: card-tricks-tracker
+    ports:
+      - "5757:5757"
+    volumes:
+      # SQLite database persists here on the host machine
+      - ./data:/data
+    restart: unless-stopped

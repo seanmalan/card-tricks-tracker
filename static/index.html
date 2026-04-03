@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prestige — Card Magic Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0a0e;
+    --surface: #13111a;
+    --surface2: #1c1826;
+    --surface3: #251f33;
+    --border: #2e2840;
+    --accent: #c9a84c;
+    --accent2: #e8c96e;
+    --red: #c94c5a;
+    --green: #4cad7a;
+    --text: #f0eaf8;
+    --text2: #a899c0;
+    --text3: #6b5f80;
+    --font-display: 'Playfair Display', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  body::after {
+    content: '♠';
+    position: fixed;
+    bottom: -60px;
+    right: -40px;
+    font-size: 320px;
+    color: rgba(201, 168, 76, 0.03);
+    pointer-events: none;
+    z-index: 0;
+    line-height: 1;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: 64px 1fr;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header .logo {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  header .logo span { color: var(--text3); font-size: 18px; }
+
+  header .tagline {
+    color: var(--text3);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-left: 1px solid var(--border);
+    padding-left: 16px;
+    margin-left: 4px;
+  }
+
+  header .stats-bar { margin-left: auto; display: flex; gap: 24px; }
+
+  .stat-pill { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+  .stat-pill .val { font-size: 16px; font-weight: 500; color: var(--accent); line-height: 1; }
+  .stat-pill .lbl { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); }
+
+  /* SIDEBAR */
+  aside {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+
+  .nav-section {
+    padding: 8px 16px 4px;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-top: 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    cursor: pointer;
+    color: var(--text2);
+    transition: all 0.15s;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent); background: rgba(201,168,76,0.06); border-left-color: var(--accent); }
+  .nav-item .icon { font-size: 14px; width: 18px; text-align: center; }
+  .nav-item .badge {
+    margin-left: auto;
+    background: var(--surface3);
+    color: var(--text3);
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  /* MAIN */
+  main { padding: 28px 32px; overflow-y: auto; max-height: calc(100vh - 64px); }
+
+  .page { display: none; animation: fadeIn 0.2s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* PAGE HEADER */
+  .page-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .page-title { font-family: var(--font-display); font-size: 28px; color: var(--text); font-weight: 700; }
+  .page-title em { color: var(--accent); font-style: italic; }
+  .page-subtitle { color: var(--text3); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #0c0a0e; font-weight: 500; }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #0c0a0e; }
+  .btn-green { background: var(--green); border-color: var(--green); color: #0c0a0e; font-weight: 500; }
+  .btn-green:hover { background: #5dc98a; border-color: #5dc98a; color: #0c0a0e; }
+  .btn-danger { border-color: var(--red); color: var(--red); background: transparent; }
+  .btn-danger:hover { background: rgba(201,76,90,0.1); }
+  .btn-sm { padding: 5px 10px; font-size: 10px; }
+
+  /* PANELS */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 14px;
+  }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 14px; }
+
+  label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 9px 12px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 70px; }
+  select option { background: var(--surface2); }
+
+  /* STAR RATING */
+  .star-rating { display: flex; gap: 4px; }
+  .star { font-size: 18px; cursor: pointer; color: var(--text3); transition: color 0.1s; }
+  .star.active { color: var(--accent); }
+  .star-rating:hover .star { color: var(--accent); }
+  .star-rating .star:hover ~ .star { color: var(--text3); }
+
+  /* SESSION ITEMS */
+  .session-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: start;
+    transition: border-color 0.15s;
+    cursor: pointer;
+  }
+
+  .session-item:hover { border-color: var(--accent); }
+
+  .session-date {
+    text-align: center;
+    background: var(--surface3);
+    border-radius: 4px;
+    padding: 6px 10px;
+    min-width: 48px;
+  }
+
+  .session-date .day { font-size: 22px; font-weight: 500; color: var(--accent); line-height: 1; }
+  .session-date .month { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  .session-info .title { font-size: 13px; color: var(--text); margin-bottom: 4px; font-weight: 500; }
+  .session-info .meta { font-size: 11px; color: var(--text3); display: flex; gap: 12px; flex-wrap: wrap; }
+  .session-info .notes { font-size: 11px; color: var(--text2); margin-top: 6px; font-style: italic; }
+  .session-rating { color: var(--accent); font-size: 12px; white-space: nowrap; }
+
+  /* ITEM CARDS (moves / tricks) */
+  .item-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+
+  .item-card:hover { border-color: var(--border); }
+
+  .item-card .item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .item-card .item-name { font-size: 14px; color: var(--text); font-weight: 500; flex: 1; }
+  .item-card .item-category {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    background: var(--surface3);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .item-card .item-meta { font-size: 11px; color: var(--text3); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .item-card .item-notes { font-size: 11px; color: var(--text2); margin-top: 8px; font-style: italic; }
+  .item-card .item-actions { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .item-card .item-link { font-size: 11px; color: var(--accent); text-decoration: none; transition: color 0.15s; }
+  .item-card .item-link:hover { color: var(--accent2); }
+
+  .item-practiced {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+  }
+
+  /* PROGRESS BARS */
+  .progress-bar { height: 4px; background: var(--surface3); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* SKILL / STATUS BADGES */
+  .level-badge {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  .level-beginner   { background: rgba(100,100,200,0.15); color: #8888dd; border: 1px solid rgba(100,100,200,0.3); }
+  .level-developing { background: rgba(76,173,122,0.15);  color: #4cad7a; border: 1px solid rgba(76,173,122,0.3); }
+  .level-proficient { background: rgba(201,168,76,0.15);  color: var(--accent); border: 1px solid rgba(201,168,76,0.3); }
+  .level-performance{ background: rgba(201,76,90,0.15);   color: #e06070; border: 1px solid rgba(201,76,90,0.3); }
+  .level-learning   { background: rgba(100,100,200,0.15); color: #8888dd; border: 1px solid rgba(100,100,200,0.3); }
+  .level-drilling   { background: rgba(76,173,122,0.15);  color: #4cad7a; border: 1px solid rgba(76,173,122,0.3); }
+  .level-retired    { background: rgba(107,95,128,0.15);  color: var(--text3); border: 1px solid rgba(107,95,128,0.3); }
+
+  /* DASHBOARD STAT CARDS */
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: attr(data-icon);
+    position: absolute;
+    right: 12px;
+    top: 10px;
+    font-size: 32px;
+    opacity: 0.08;
+  }
+
+  .stat-card .stat-val { font-size: 36px; font-weight: 500; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+  .stat-card .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); }
+  .stat-card .stat-sub { font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+  /* CHART */
+  .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; margin-top: 12px; }
+  .chart-bar { flex: 1; background: var(--surface3); border-radius: 2px 2px 0 0; transition: background 0.2s; cursor: default; }
+  .chart-bar.has-data { background: rgba(201,168,76,0.4); }
+  .chart-bar.today { background: var(--accent); }
+  .chart-bar:hover { background: var(--accent2) !important; }
+
+  /* BRUSH-UP ALERT */
+  .brushup-card {
+    background: rgba(201,76,90,0.08);
+    border: 1px solid rgba(201,76,90,0.25);
+    border-radius: 5px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brushup-card .brushup-name { font-size: 13px; color: var(--text); font-weight: 500; flex: 1; }
+  .brushup-card .brushup-meta { font-size: 11px; color: var(--text3); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    width: 520px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: none; } }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-title em { color: var(--accent); }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+  /* TIMER */
+  .timer-display {
+    font-size: 48px;
+    font-weight: 300;
+    color: var(--accent);
+    text-align: center;
+    letter-spacing: 0.06em;
+    padding: 20px;
+    font-family: var(--font-mono);
+  }
+
+  .timer-controls { display: flex; justify-content: center; gap: 10px; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+  .empty-state p { font-size: 13px; margin-bottom: 16px; }
+
+  /* TAG */
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--surface3);
+    color: var(--text3);
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin: 2px 2px 0 0;
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+  .suit.red { color: var(--red); }
+  .highlight { color: var(--accent); }
+
+  @media (max-width: 800px) {
+    .app { grid-template-columns: 1fr; }
+    aside { display: none; }
+    main { padding: 16px; }
+    .grid-4, .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo"><span>♠</span> Prestige</div>
+    <div class="tagline">Card Magic Tracker</div>
+    <div class="stats-bar">
+      <div class="stat-pill"><div class="val" id="hdr-sessions">0</div><div class="lbl">Sessions</div></div>
+      <div class="stat-pill"><div class="val" id="hdr-moves">0</div><div class="lbl">Moves</div></div>
+      <div class="stat-pill"><div class="val" id="hdr-tricks">0</div><div class="lbl">Tricks</div></div>
+      <div class="stat-pill"><div class="val" id="hdr-hours">0h</div><div class="lbl">Total Time</div></div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="nav-section">Practice</div>
+    <div class="nav-item active" onclick="nav('dashboard')"><span class="icon">◆</span> Dashboard</div>
+    <div class="nav-item" onclick="nav('sessions')"><span class="icon">◉</span> Sessions <span class="badge" id="nav-sessions-count">0</span></div>
+    <div class="nav-section">Library</div>
+    <div class="nav-item" onclick="nav('moves')"><span class="icon">✦</span> Moves &amp; Sleights <span class="badge" id="nav-moves-count">0</span></div>
+    <div class="nav-item" onclick="nav('tricks')"><span class="icon">◈</span> Tricks &amp; Routines <span class="badge" id="nav-tricks-count">0</span></div>
+    <div class="nav-section">Tools</div>
+    <div class="nav-item" onclick="nav('timer')"><span class="icon">◷</span> Practice Timer</div>
+    <div class="nav-item" onclick="nav('settings')"><span class="icon">⚙</span> Settings</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Overview</div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="openModal('modal-session')">+ Log Session</button>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom:16px">
+        <div class="stat-card" data-icon="◉">
+          <div class="stat-val" id="dash-sessions">0</div>
+          <div class="stat-label">Total Sessions</div>
+          <div class="stat-sub" id="dash-last-session">No sessions yet</div>
+        </div>
+        <div class="stat-card" data-icon="◷">
+          <div class="stat-val" id="dash-hours">0</div>
+          <div class="stat-label">Hours Practiced</div>
+          <div class="stat-sub" id="dash-avg-session">— avg per session</div>
+        </div>
+        <div class="stat-card" data-icon="✦">
+          <div class="stat-val" id="dash-moves">0</div>
+          <div class="stat-label">Moves Tracked</div>
+          <div class="stat-sub" id="dash-moves-perf">— performance ready</div>
+        </div>
+        <div class="stat-card" data-icon="◈">
+          <div class="stat-val" id="dash-tricks">0</div>
+          <div class="stat-label">Tricks / Routines</div>
+          <div class="stat-sub" id="dash-tricks-perf">— performance ready</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Practice Frequency — Last 30 Days</div>
+          <div class="mini-chart" id="dash-chart"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px">
+            <span style="font-size:10px;color:var(--text3)">30 days ago</span>
+            <span style="font-size:10px;color:var(--text3)">Today</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Recent Sessions</div>
+          <div id="dash-recent-sessions">
+            <div class="empty-state" style="padding:20px">
+              <p>No sessions logged yet.</p>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-session')">Log First Session</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title" id="dash-brushup-title">Needs Brushing Up</div>
+          <div id="dash-brushup-list">
+            <div style="color:var(--text3);font-size:12px;padding:10px 0">No tricks need brushing up.</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Tricks in Progress</div>
+          <div id="dash-tricks-list">
+            <div style="color:var(--text3);font-size:12px;padding:10px 0">No tricks tracked yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Moves Needing Work</div>
+          <div id="dash-moves-list">
+            <div style="color:var(--text3);font-size:12px;padding:10px 0">No moves tracked yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSIONS -->
+    <div class="page" id="page-sessions">
+      <div class="page-header">
+        <div class="page-title">Practice <em>Sessions</em></div>
+        <div class="page-subtitle" id="sessions-count-label">0 sessions</div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="openModal('modal-session')">+ Log Session</button>
+        </div>
+      </div>
+      <div id="sessions-list">
+        <div class="empty-state">
+          <div class="icon">◉</div>
+          <p>No sessions logged yet.<br>Start tracking your practice!</p>
+          <button class="btn btn-primary" onclick="openModal('modal-session')">Log First Session</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOVES -->
+    <div class="page" id="page-moves">
+      <div class="page-header">
+        <div class="page-title">Moves &amp; <em>Sleights</em></div>
+        <div class="page-subtitle" id="moves-count-label">0 moves</div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="openModal('modal-move')">+ Add Move</button>
+        </div>
+      </div>
+      <div id="moves-list">
+        <div class="empty-state">
+          <div class="icon">✦</div>
+          <p>No moves tracked yet.<br>Add sleights, controls, shuffles and more.</p>
+          <button class="btn btn-primary" onclick="openModal('modal-move')">Add First Move</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRICKS -->
+    <div class="page" id="page-tricks">
+      <div class="page-header">
+        <div class="page-title">Tricks &amp; <em>Routines</em></div>
+        <div class="page-subtitle" id="tricks-count-label">0 tricks</div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="openModal('modal-trick')">+ Add Trick</button>
+        </div>
+      </div>
+      <div id="tricks-list">
+        <div class="empty-state">
+          <div class="icon">◈</div>
+          <p>No tricks tracked yet.<br>Add your current repertoire.</p>
+          <button class="btn btn-primary" onclick="openModal('modal-trick')">Add First Trick</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIMER -->
+    <div class="page" id="page-timer">
+      <div class="page-header">
+        <div class="page-title">Practice <em>Timer</em></div>
+        <div class="page-subtitle">Focus Session</div>
+      </div>
+      <div class="panel" style="max-width:440px;margin:0 auto;text-align:center">
+        <div class="panel-title">Session Timer</div>
+        <div class="timer-display" id="timer-display">00:00:00</div>
+        <div id="timer-status-label" style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:16px;">Ready</div>
+        <div class="timer-controls">
+          <button class="btn btn-primary" id="timer-start-btn"  onclick="timerStart()">▶ Start</button>
+          <button class="btn"             id="timer-pause-btn"  onclick="timerPause()"  style="display:none">⏸ Pause</button>
+          <button class="btn"             id="timer-resume-btn" onclick="timerResume()" style="display:none">▶ Resume</button>
+          <button class="btn"             id="timer-stop-btn"   onclick="timerStop()"   style="display:none;border-color:var(--red);color:var(--red)">■ Stop</button>
+        </div>
+        <hr class="divider">
+        <div class="form-group" style="text-align:left">
+          <label>Session name (optional)</label>
+          <input type="text" id="timer-session-name" placeholder="What are you working on?">
+        </div>
+        <div id="timer-log-area" style="display:none">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:10px" id="timer-stopped-msg"></div>
+          <button class="btn btn-primary" style="width:100%" onclick="logTimerSession()">✓ Log This Session</button>
+          <button class="btn" style="width:100%;margin-top:8px" onclick="timerReset()">Discard &amp; Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div class="page-title">Settings</div>
+        <div class="page-subtitle">Preferences</div>
+      </div>
+      <div class="panel" style="max-width:480px">
+        <div class="panel-title">Brush-Up Reminder</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+          Show a trick in "Needs Brushing Up" on the dashboard if it hasn't been practiced for this many days.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="number" id="setting-brushup-days" min="1" max="365" style="width:80px">
+          <span style="color:var(--text3);font-size:12px">days</span>
+          <button class="btn btn-primary btn-sm" onclick="saveBrushUpDays()">Save</button>
+          <span id="setting-saved-msg" style="font-size:11px;color:var(--green);display:none">Saved!</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: LOG SESSION -->
+<div class="modal-overlay" id="modal-session">
+  <div class="modal">
+    <div class="modal-title">Log Practice <em>Session</em></div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Session Timer</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div id="modal-timer-display" style="font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--accent);letter-spacing:.06em;min-width:110px;">00:00:00</div>
+        <div id="modal-timer-status" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);flex:1;">Ready</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-primary btn-sm" id="ms-start-btn"  onclick="msStart()">▶ Start</button>
+          <button class="btn btn-sm"             id="ms-pause-btn"  onclick="msPause()"  style="display:none;">⏸ Pause</button>
+          <button class="btn btn-sm"             id="ms-resume-btn" onclick="msResume()" style="display:none;">▶ Resume</button>
+          <button class="btn btn-sm"             id="ms-stop-btn"   onclick="msStop()"   style="display:none;border-color:var(--red);color:var(--red);">■ Stop</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group"><label>Date</label><input type="date" id="s-date"></div>
+      <div class="form-group"><label>Duration (minutes)</label><input type="number" id="s-duration" placeholder="e.g. 45 — or use timer" min="1"></div>
+    </div>
+    <div class="form-group"><label>Session Title</label><input type="text" id="s-title" placeholder="e.g. Double Lift drills, Ambitious Card work…"></div>
+    <div class="form-group">
+      <label>Focus Area</label>
+      <select id="s-focus">
+        <option value="">— General practice —</option>
+        <option>Sleight of Hand</option>
+        <option>Controls &amp; Breaks</option>
+        <option>False Shuffles / Cuts</option>
+        <option>Forces</option>
+        <option>Palming</option>
+        <option>Specific Tricks</option>
+        <option>Full Routine Run-through</option>
+        <option>Performance Practice</option>
+        <option>Cardistry</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Moves Practiced (comma separated)</label><input type="text" id="s-moves" placeholder="e.g. Double Lift, Hindu Shuffle, Classic Pass"></div>
+    <div class="form-group"><label>Notes</label><textarea id="s-notes" placeholder="What went well? What needs more work? Any breakthroughs?"></textarea></div>
+    <div class="form-group">
+      <label>Session Quality</label>
+      <div class="star-rating" id="s-rating" data-val="0">
+        <span class="star" data-v="1" onclick="setRating('s-rating',1)">★</span>
+        <span class="star" data-v="2" onclick="setRating('s-rating',2)">★</span>
+        <span class="star" data-v="3" onclick="setRating('s-rating',3)">★</span>
+        <span class="star" data-v="4" onclick="setRating('s-rating',4)">★</span>
+        <span class="star" data-v="5" onclick="setRating('s-rating',5)">★</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="msReset();closeModal('modal-session')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSession()">Save Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD MOVE -->
+<div class="modal-overlay" id="modal-move">
+  <div class="modal">
+    <div class="modal-title">Add Move / <em>Sleight</em></div>
+    <input type="hidden" id="m-id">
+    <div class="form-group"><label>Move Name</label><input type="text" id="m-name" placeholder="e.g. Double Lift, Classic Pass, Hindu Shuffle…"></div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="m-category">
+          <option>Control</option><option>False Shuffle</option><option>False Cut</option>
+          <option>Force</option><option>Palm</option><option>Switch</option>
+          <option>Production</option><option>Vanish</option><option>Flourish</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Skill Level</label>
+        <select id="m-level">
+          <option value="beginner">Beginner</option>
+          <option value="developing">Developing</option>
+          <option value="proficient">Proficient</option>
+          <option value="performance">Performance Ready</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Source / Reference</label><input type="text" id="m-source" placeholder="e.g. Card College Vol.1, Expert at the Card Table…"></div>
+    <div class="form-group"><label>Personal Notes</label><textarea id="m-notes" placeholder="Tips, trouble spots, muscle memory cues…"></textarea></div>
+    <div class="form-group">
+      <label>Confidence Rating</label>
+      <div class="star-rating" id="m-rating" data-val="0">
+        <span class="star" data-v="1" onclick="setRating('m-rating',1)">★</span>
+        <span class="star" data-v="2" onclick="setRating('m-rating',2)">★</span>
+        <span class="star" data-v="3" onclick="setRating('m-rating',3)">★</span>
+        <span class="star" data-v="4" onclick="setRating('m-rating',4)">★</span>
+        <span class="star" data-v="5" onclick="setRating('m-rating',5)">★</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-move')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMove()">Save Move</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD TRICK -->
+<div class="modal-overlay" id="modal-trick">
+  <div class="modal">
+    <div class="modal-title">Add Trick / <em>Routine</em></div>
+    <input type="hidden" id="t-id">
+    <div class="form-group"><label>Trick Name</label><input type="text" id="t-name" placeholder="e.g. Ambitious Card, Out of This World…"></div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Type</label>
+        <select id="t-type"><option>Trick</option><option>Routine</option><option>Set</option><option>Open-Index</option></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="t-status">
+          <option value="learning">Learning</option>
+          <option value="drilling">Drilling</option>
+          <option value="performance">Performance Ready</option>
+          <option value="retired">Retired</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Tutorial / Reference Link</label><input type="url" id="t-link" placeholder="https://…"></div>
+    <div class="form-group"><label>Moves / Sleights Used</label><input type="text" id="t-moves" placeholder="e.g. Double Lift, Top Palm, Hindu Force…"></div>
+    <div class="form-group"><label>Source / Creator</label><input type="text" id="t-source" placeholder="e.g. Dai Vernon, Tarbell Course, Paul Harris…"></div>
+    <div class="form-group"><label>Performance Notes</label><textarea id="t-notes" placeholder="Patter ideas, reset requirements, audience reactions…"></textarea></div>
+    <div class="form-group">
+      <label>Overall Rating</label>
+      <div class="star-rating" id="t-rating" data-val="0">
+        <span class="star" data-v="1" onclick="setRating('t-rating',1)">★</span>
+        <span class="star" data-v="2" onclick="setRating('t-rating',2)">★</span>
+        <span class="star" data-v="3" onclick="setRating('t-rating',3)">★</span>
+        <span class="star" data-v="4" onclick="setRating('t-rating',4)">★</span>
+        <span class="star" data-v="5" onclick="setRating('t-rating',5)">★</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-trick')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTrick()">Save Trick</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: VIEW SESSION -->
+<div class="modal-overlay" id="modal-view-session">
+  <div class="modal">
+    <div class="modal-title" id="vs-title">Session</div>
+    <div id="vs-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="vs-delete-btn">Delete</button>
+      <button class="btn" onclick="closeModal('modal-view-session')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- API HELPERS ----
+async function api(method, path, body = null) {
+  const opts = { method, headers: {} };
+  if (body !== null) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch('/api' + path, opts);
+  if (!res.ok) { console.error('API error', path, res.status); return null; }
+  return res.json();
+}
+
+// ---- STATE ----
+let sessions = [], moves = [], tricks = [], dashData = {}, settings = {};
+
+async function loadAll() {
+  const [s, m, t, d, st] = await Promise.all([
+    api('GET', '/sessions'),
+    api('GET', '/moves'),
+    api('GET', '/tricks'),
+    api('GET', '/dashboard'),
+    api('GET', '/settings'),
+  ]);
+  sessions = s || [];
+  moves    = m || [];
+  tricks   = t || [];
+  dashData = d || {};
+  settings = st || {};
+
+  // Populate settings input
+  const inp = document.getElementById('setting-brushup-days');
+  if (inp) inp.value = settings.brush_up_days || 14;
+
+  updateAll();
+}
+
+// ---- NAVIGATION ----
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') === `nav('${page}')`) n.classList.add('active');
+  });
+}
+
+// ---- MODAL ----
+function openModal(id) {
+  if (id === 'modal-session') {
+    document.getElementById('s-date').value = new Date().toISOString().slice(0,10);
+    setRating('s-rating', 0);
+    msReset();
+  }
+  if (id === 'modal-move')  clearMoveForm();
+  if (id === 'modal-trick') clearTrickForm();
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ---- STAR RATING ----
+function setRating(id, val) {
+  const el = document.getElementById(id);
+  el.dataset.val = val;
+  el.querySelectorAll('.star').forEach(s => s.classList.toggle('active', parseInt(s.dataset.v) <= val));
+}
+
+function getRating(id) { return parseInt(document.getElementById(id).dataset.val) || 0; }
+function renderStars(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+function formatDate(d) {
+  const dt = new Date(d + 'T12:00:00');
+  return dt.toLocaleDateString('en-US', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+}
+
+// ---- SESSIONS ----
+async function saveSession() {
+  const date = document.getElementById('s-date').value;
+  if (!date) { alert('Please select a date.'); return; }
+  await api('POST', '/sessions', {
+    date,
+    duration: parseInt(document.getElementById('s-duration').value) || 0,
+    title: document.getElementById('s-title').value.trim() || 'Practice Session',
+    focus: document.getElementById('s-focus').value,
+    moves_practiced: document.getElementById('s-moves').value.trim(),
+    notes: document.getElementById('s-notes').value.trim(),
+    rating: getRating('s-rating'),
+  });
+  closeModal('modal-session');
+  resetSessionForm();
+  msReset();
+  await loadAll();
+}
+
+function resetSessionForm() {
+  ['s-duration','s-title','s-moves','s-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('s-focus').value = '';
+  setRating('s-rating', 0);
+}
+
+async function deleteSession(id) {
+  await api('DELETE', '/sessions/' + id);
+  closeModal('modal-view-session');
+  await loadAll();
+}
+
+function viewSession(id) {
+  const s = sessions.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('vs-title').textContent = s.title;
+  document.getElementById('vs-body').innerHTML = `
+    <div class="grid-2" style="margin-bottom:12px">
+      <div><span style="color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Date</span><br><span>${formatDate(s.date)}</span></div>
+      <div><span style="color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Duration</span><br><span>${s.duration_mins ? s.duration_mins + ' min' : '—'}</span></div>
+    </div>
+    ${s.focus ? `<div class="form-group"><span style="color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Focus</span><br><span class="tag">${s.focus}</span></div>` : ''}
+    ${s.moves_practiced ? `<div class="form-group"><span style="color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Moves Practiced</span><br>${s.moves_practiced.split(',').map(m=>`<span class="tag">${m.trim()}</span>`).join('')}</div>` : ''}
+    ${s.notes ? `<div class="form-group"><span style="color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Notes</span><br><p style="color:var(--text2);font-size:12px;font-style:italic;margin-top:4px">${s.notes}</p></div>` : ''}
+    <div><span style="color:var(--accent)">${renderStars(s.rating)}</span></div>
+  `;
+  document.getElementById('vs-delete-btn').onclick = () => { if (confirm('Delete this session?')) deleteSession(id); };
+  document.getElementById('modal-view-session').classList.add('open');
+}
+
+function renderSessions(list, containerId, limit) {
+  const target = document.getElementById(containerId);
+  if (!target) return;
+  const data = limit ? list.slice(0, limit) : list;
+  if (!data.length) { target.innerHTML = ''; return; }
+  target.innerHTML = data.map(s => {
+    const d = new Date(s.date + 'T12:00:00');
+    return `<div class="session-item" onclick="viewSession(${s.id})">
+      <div class="session-date"><div class="day">${d.getDate()}</div><div class="month">${d.toLocaleString('default',{month:'short'})}</div></div>
+      <div class="session-info">
+        <div class="title">${s.title}</div>
+        <div class="meta">
+          ${s.duration_mins ? `<span>◷ ${s.duration_mins} min</span>` : ''}
+          ${s.focus ? `<span class="tag">${s.focus}</span>` : ''}
+        </div>
+        ${s.notes ? `<div class="notes">${s.notes.slice(0,80)}${s.notes.length>80?'…':''}</div>` : ''}
+      </div>
+      <div class="session-rating">${renderStars(s.rating)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ---- MOVES ----
+function clearMoveForm() {
+  ['m-id','m-name','m-source','m-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('m-category').value = 'Control';
+  document.getElementById('m-level').value = 'beginner';
+  setRating('m-rating', 0);
+}
+
+async function saveMove() {
+  const name = document.getElementById('m-name').value.trim();
+  if (!name) { alert('Please enter a move name.'); return; }
+  await api('POST', '/moves', {
+    id: document.getElementById('m-id').value ? parseInt(document.getElementById('m-id').value) : null,
+    name,
+    category: document.getElementById('m-category').value,
+    level: document.getElementById('m-level').value,
+    source: document.getElementById('m-source').value.trim(),
+    notes: document.getElementById('m-notes').value.trim(),
+    rating: getRating('m-rating'),
+  });
+  closeModal('modal-move');
+  await loadAll();
+}
+
+function editMove(id) {
+  const m = moves.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('m-id').value       = m.id;
+  document.getElementById('m-name').value     = m.name;
+  document.getElementById('m-category').value = m.category;
+  document.getElementById('m-level').value    = m.level;
+  document.getElementById('m-source').value   = m.source || '';
+  document.getElementById('m-notes').value    = m.notes  || '';
+  setRating('m-rating', m.rating);
+  document.getElementById('modal-move').classList.add('open');
+}
+
+async function deleteMove(id) {
+  if (!confirm('Delete this move?')) return;
+  await api('DELETE', '/moves/' + id);
+  await loadAll();
+}
+
+function renderMoves(containerId, list) {
+  const target = document.getElementById(containerId);
+  if (!target) return;
+  if (!list.length) { target.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0">No moves tracked yet.</div>'; return; }
+  const showActions = containerId === 'moves-list';
+  target.innerHTML = list.map(m => `
+    <div class="item-card">
+      <div class="item-header">
+        <div class="item-name">${m.name}</div>
+        <div class="item-category">${m.category}</div>
+        <span class="level-badge level-${m.level}">${m.level}</span>
+      </div>
+      <div class="item-meta">
+        <span>Confidence: <span style="color:var(--accent)">${renderStars(m.rating)}</span></span>
+        ${m.source ? `<span>📖 ${m.source}</span>` : ''}
+      </div>
+      ${m.notes ? `<div class="item-notes">${m.notes}</div>` : ''}
+      ${showActions ? `<div class="item-actions">
+        <button class="btn btn-sm" onclick="editMove(${m.id})">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteMove(${m.id})">Delete</button>
+      </div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ---- TRICKS ----
+function clearTrickForm() {
+  ['t-id','t-name','t-moves','t-source','t-notes','t-link'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('t-type').value   = 'Trick';
+  document.getElementById('t-status').value = 'learning';
+  setRating('t-rating', 0);
+}
+
+async function saveTrick() {
+  const name = document.getElementById('t-name').value.trim();
+  if (!name) { alert('Please enter a trick name.'); return; }
+  await api('POST', '/tricks', {
+    id: document.getElementById('t-id').value ? parseInt(document.getElementById('t-id').value) : null,
+    name,
+    type:      document.getElementById('t-type').value,
+    status:    document.getElementById('t-status').value,
+    link:      document.getElementById('t-link').value.trim(),
+    moves_used: document.getElementById('t-moves').value.trim(),
+    source:    document.getElementById('t-source').value.trim(),
+    notes:     document.getElementById('t-notes').value.trim(),
+    rating:    getRating('t-rating'),
+  });
+  closeModal('modal-trick');
+  await loadAll();
+}
+
+function editTrick(id) {
+  const t = tricks.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('t-id').value     = t.id;
+  document.getElementById('t-name').value   = t.name;
+  document.getElementById('t-type').value   = t.type;
+  document.getElementById('t-status').value = t.status;
+  document.getElementById('t-link').value   = t.link   || '';
+  document.getElementById('t-moves').value  = t.moves_used || '';
+  document.getElementById('t-source').value = t.source || '';
+  document.getElementById('t-notes').value  = t.notes  || '';
+  setRating('t-rating', t.rating);
+  document.getElementById('modal-trick').classList.add('open');
+}
+
+async function markPracticed(id) {
+  await api('POST', '/tricks/' + id + '/practiced');
+  await loadAll();
+}
+
+async function deleteTrick(id) {
+  if (!confirm('Delete this trick?')) return;
+  await api('DELETE', '/tricks/' + id);
+  await loadAll();
+}
+
+const statusBadgeClass = {
+  learning: 'level-learning', drilling: 'level-drilling',
+  performance: 'level-performance', retired: 'level-retired'
+};
+
+function renderTricks(containerId, list) {
+  const target = document.getElementById(containerId);
+  if (!target) return;
+  if (!list.length) { target.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0">No tricks tracked yet.</div>'; return; }
+  const showActions = containerId === 'tricks-list';
+  target.innerHTML = list.map(t => `
+    <div class="item-card">
+      <div class="item-header">
+        <div class="item-name">${t.name}</div>
+        <div class="item-category">${t.type}</div>
+        <span class="level-badge ${statusBadgeClass[t.status] || 'level-learning'}">${t.status}</span>
+      </div>
+      <div class="item-meta">
+        <span>Rating: <span style="color:var(--accent)">${renderStars(t.rating)}</span></span>
+        ${t.source ? `<span>✍ ${t.source}</span>` : ''}
+        ${t.last_practiced ? `<span class="item-practiced">Last practiced: ${t.last_practiced} · ${t.practice_count}×</span>` : '<span class="item-practiced">Never practiced</span>'}
+      </div>
+      ${t.moves_used ? `<div style="margin-top:6px">${t.moves_used.split(',').map(m=>`<span class="tag">${m.trim()}</span>`).join('')}</div>` : ''}
+      ${t.notes ? `<div class="item-notes">${t.notes}</div>` : ''}
+      ${showActions ? `<div class="item-actions">
+        <button class="btn btn-sm btn-green" onclick="markPracticed(${t.id})">✓ Practiced Today</button>
+        ${t.link ? `<a href="${t.link}" target="_blank" class="item-link btn btn-sm">▶ Tutorial</a>` : ''}
+        <button class="btn btn-sm" onclick="editTrick(${t.id})">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteTrick(${t.id})">Delete</button>
+      </div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ---- DASHBOARD RENDER ----
+function renderBrushUp(list, days) {
+  const target = document.getElementById('dash-brushup-list');
+  const titleEl = document.getElementById('dash-brushup-title');
+  if (titleEl) titleEl.textContent = `Needs Brushing Up (${days}+ days)`;
+  if (!list || !list.length) {
+    target.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0">All tricks are up to date! 🎉</div>';
+    return;
+  }
+  target.innerHTML = list.map(t => {
+    const last = t.last_practiced ? `Last: ${t.last_practiced}` : 'Never practiced';
+    return `<div class="brushup-card">
+      <span style="font-size:16px;color:var(--red)">⚠</span>
+      <div class="brushup-name">${t.name}</div>
+      <div class="brushup-meta">${last}</div>
+    </div>`;
+  }).join('');
+}
+
+function buildChart(data) {
+  const chart = document.getElementById('dash-chart');
+  if (!chart || !data) return;
+  const max = Math.max(...data.map(d => d.count), 1);
+  chart.innerHTML = data.map((d, i) => {
+    const h = d.count ? Math.max(8, Math.round((d.count / max) * 56)) : 4;
+    const isToday = i === data.length - 1;
+    return `<div class="chart-bar ${d.count>0?'has-data':''} ${isToday?'today':''}" style="height:${h}px" title="${d.date}: ${d.count} session(s)"></div>`;
+  }).join('');
+}
+
+// ---- SETTINGS ----
+async function saveBrushUpDays() {
+  const val = parseInt(document.getElementById('setting-brushup-days').value);
+  if (!val || val < 1) return;
+  await api('POST', '/settings', { key: 'brush_up_days', value: val });
+  const msg = document.getElementById('setting-saved-msg');
+  msg.style.display = 'inline';
+  setTimeout(() => { msg.style.display = 'none'; }, 2000);
+  await loadAll();
+}
+
+// ---- UPDATE ALL ----
+function updateAll() {
+  const d = dashData;
+
+  // Header pills
+  document.getElementById('hdr-sessions').textContent = sessions.length;
+  document.getElementById('hdr-moves').textContent    = moves.length;
+  document.getElementById('hdr-tricks').textContent   = tricks.length;
+  document.getElementById('hdr-hours').textContent    = (d.total_hours || 0) + 'h';
+
+  // Nav badges
+  document.getElementById('nav-sessions-count').textContent = sessions.length;
+  document.getElementById('nav-moves-count').textContent    = moves.length;
+  document.getElementById('nav-tricks-count').textContent   = tricks.length;
+
+  // Dashboard stat cards
+  document.getElementById('dash-sessions').textContent   = d.total_sessions || 0;
+  document.getElementById('dash-hours').textContent      = d.total_hours    || 0;
+  document.getElementById('dash-moves').textContent      = d.total_moves    || 0;
+  document.getElementById('dash-tricks').textContent     = d.total_tricks   || 0;
+  document.getElementById('dash-last-session').textContent = d.last_session_date ? 'Last: ' + formatDate(d.last_session_date) : 'No sessions yet';
+  document.getElementById('dash-avg-session').textContent  = d.avg_mins ? d.avg_mins + ' min avg per session' : '— avg per session';
+  document.getElementById('dash-moves-perf').textContent   = (d.perf_moves || 0) + ' performance ready';
+  document.getElementById('dash-tricks-perf').textContent  = (d.perf_tricks || 0) + ' performance ready';
+
+  // Page labels
+  document.getElementById('sessions-count-label').textContent = sessions.length + ' session' + (sessions.length!==1?'s':'');
+  document.getElementById('moves-count-label').textContent    = moves.length + ' move' + (moves.length!==1?'s':'');
+  document.getElementById('tricks-count-label').textContent   = tricks.length + ' trick' + (tricks.length!==1?'s':'');
+
+  // Render lists
+  renderSessions(sessions, 'dash-recent-sessions', 3);
+  renderSessions(sessions, 'sessions-list', 0);
+  renderMoves('dash-moves-list', (d.moves_needing_work || []).slice(0,3));
+  renderMoves('moves-list', moves);
+  renderTricks('dash-tricks-list', (d.tricks_in_progress || []).slice(0,3));
+  renderTricks('tricks-list', tricks);
+  renderBrushUp(d.needs_brushup, d.brush_up_days || 14);
+  buildChart(d.thirty_days);
+}
+
+// ---- MODAL SESSION TIMER ----
+let msInterval = null, msSecs = 0, msState = 'idle';
+
+function msFmt(s) { const p = n => String(n).padStart(2,'0'); return `${p(Math.floor(s/3600))}:${p(Math.floor((s%3600)/60))}:${p(s%60)}`; }
+
+function msSetUI(state) {
+  msState = state;
+  const d = document.getElementById('modal-timer-display');
+  const st = document.getElementById('modal-timer-status');
+  if (!d) return;
+  document.getElementById('ms-start-btn').style.display  = state==='idle'    ? '' : 'none';
+  document.getElementById('ms-pause-btn').style.display  = state==='running' ? '' : 'none';
+  document.getElementById('ms-resume-btn').style.display = state==='paused'  ? '' : 'none';
+  document.getElementById('ms-stop-btn').style.display   = (state==='running'||state==='paused') ? '' : 'none';
+  const labels = { idle:'Ready', running:'Practicing…', paused:'Paused', stopped:'Done — duration filled in' };
+  const colors = { idle:'var(--text3)', running:'var(--green)', paused:'var(--accent)', stopped:'var(--green)' };
+  st.textContent = labels[state] || '';
+  st.style.color = colors[state] || 'var(--text3)';
+  d.style.color = state==='paused' ? 'var(--text2)' : 'var(--accent)';
+}
+
+function msReset() { clearInterval(msInterval); msSecs=0; msState='idle'; const d=document.getElementById('modal-timer-display'); if(d) d.textContent='00:00:00'; msSetUI('idle'); }
+function msStart()  { if(msState!=='idle') return; msInterval=setInterval(()=>{ msSecs++; const d=document.getElementById('modal-timer-display'); if(d) d.textContent=msFmt(msSecs); },1000); msSetUI('running'); }
+function msPause()  { if(msState!=='running') return; clearInterval(msInterval); msSetUI('paused'); }
+function msResume() { if(msState!=='paused') return; msInterval=setInterval(()=>{ msSecs++; const d=document.getElementById('modal-timer-display'); if(d) d.textContent=msFmt(msSecs); },1000); msSetUI('running'); }
+function msStop()   { if(msState!=='running'&&msState!=='paused') return; clearInterval(msInterval); document.getElementById('s-duration').value=Math.max(1,Math.round(msSecs/60)); msSetUI('stopped'); }
+
+// ---- STANDALONE TIMER ----
+let timerInterval = null, timerSeconds = 0, timerState = 'idle';
+
+function timerFmt(s) { const p=n=>String(n).padStart(2,'0'); return `${p(Math.floor(s/3600))}:${p(Math.floor((s%3600)/60))}:${p(s%60)}`; }
+
+function timerSetUI(state) {
+  timerState = state;
+  document.getElementById('timer-start-btn').style.display  = state==='idle'    ? '' : 'none';
+  document.getElementById('timer-pause-btn').style.display  = state==='running' ? '' : 'none';
+  document.getElementById('timer-resume-btn').style.display = state==='paused'  ? '' : 'none';
+  document.getElementById('timer-stop-btn').style.display   = (state==='running'||state==='paused') ? '' : 'none';
+  document.getElementById('timer-log-area').style.display   = state==='stopped' ? '' : 'none';
+  const labels = { idle:'Ready', running:'Practicing…', paused:'Paused', stopped:'Session complete' };
+  const colors = { idle:'var(--text3)', running:'var(--green)', paused:'var(--accent)', stopped:'var(--red)' };
+  const lbl = document.getElementById('timer-status-label');
+  lbl.textContent = labels[state] || '';
+  lbl.style.color = colors[state] || 'var(--text3)';
+  document.getElementById('timer-display').style.color = state==='paused' ? 'var(--text2)' : 'var(--accent)';
+}
+
+function timerStart()  { if(timerState!=='idle') return; timerInterval=setInterval(()=>{ timerSeconds++; document.getElementById('timer-display').textContent=timerFmt(timerSeconds); },1000); timerSetUI('running'); }
+function timerPause()  { if(timerState!=='running') return; clearInterval(timerInterval); timerSetUI('paused'); }
+function timerResume() { if(timerState!=='paused') return; timerInterval=setInterval(()=>{ timerSeconds++; document.getElementById('timer-display').textContent=timerFmt(timerSeconds); },1000); timerSetUI('running'); }
+function timerStop()   { if(timerState!=='running'&&timerState!=='paused') return; clearInterval(timerInterval); const mins=Math.max(1,Math.round(timerSeconds/60)); document.getElementById('timer-stopped-msg').textContent=`Recorded: ${timerFmt(timerSeconds)} (${mins} min). Add a name and log it.`; timerSetUI('stopped'); }
+function timerReset()  { clearInterval(timerInterval); timerSeconds=0; document.getElementById('timer-display').textContent='00:00:00'; timerSetUI('idle'); }
+
+async function logTimerSession() {
+  const name = document.getElementById('timer-session-name').value.trim() || 'Practice Session';
+  const dur  = Math.max(1, Math.round(timerSeconds / 60));
+  await api('POST', '/sessions', { date: new Date().toISOString().slice(0,10), duration: dur, title: name, notes: 'Logged via timer.' });
+  document.getElementById('timer-session-name').value = '';
+  timerReset();
+  await loadAll();
+  alert(`Session logged: "${name}" — ${dur} minutes`);
+}
+
+// ---- INIT ----
+loadAll();
+</script>
+</body>
+</html>
