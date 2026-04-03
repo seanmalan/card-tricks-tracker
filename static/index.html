@@ -478,12 +478,46 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 28px;
     width: 520px;
     max-width: 95vw;
     max-height: 90vh;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     animation: modalIn 0.2s ease;
+  }
+
+  .modal-step {
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .modal-step.active {
+    display: flex;
+  }
+
+  .modal-body {
+    padding: 28px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .modal-title {
+    padding: 28px 28px 0;
+    flex-shrink: 0;
+  }
+
+  .modal-footer {
+    padding: 16px 28px;
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: var(--surface);
+    border-radius: 0 0 8px 8px;
   }
 
   @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: none; } }
@@ -492,13 +526,12 @@
     font-family: var(--font-display);
     font-size: 22px;
     color: var(--text);
-    margin-bottom: 20px;
-    padding-bottom: 14px;
+    padding: 24px 28px 16px;
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
   }
 
   .modal-title em { color: var(--accent); }
-  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
 
   /* TIMER */
   .timer-display {
@@ -773,17 +806,19 @@
     <!-- STEP 1: Category -->
     <div class="modal-step active" id="session-step-1">
       <div class="modal-title">Log Practice <em>Session</em></div>
-      <p style="font-size:12px;color:var(--text3);margin-bottom:18px;">What are you practicing today?</p>
-      <div class="category-cards">
-        <div class="category-card" id="cat-moves" onclick="selectSessionCategory('moves')">
-          <div class="cat-icon">✦</div>
-          <div class="cat-title">Moves &amp; Sleights</div>
-          <div class="cat-sub">Sleights, controls, shuffles, palming</div>
-        </div>
-        <div class="category-card" id="cat-tricks" onclick="selectSessionCategory('tricks')">
-          <div class="cat-icon">◈</div>
-          <div class="cat-title">Tricks &amp; Routines</div>
-          <div class="cat-sub">Full tricks, routines, performance sets</div>
+      <div class="modal-body">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:18px;">What are you practicing today?</p>
+        <div class="category-cards">
+          <div class="category-card" id="cat-moves" onclick="selectSessionCategory('moves')">
+            <div class="cat-icon">✦</div>
+            <div class="cat-title">Moves &amp; Sleights</div>
+            <div class="cat-sub">Sleights, controls, shuffles, palming</div>
+          </div>
+          <div class="category-card" id="cat-tricks" onclick="selectSessionCategory('tricks')">
+            <div class="cat-icon">◈</div>
+            <div class="cat-title">Tricks &amp; Routines</div>
+            <div class="cat-sub">Full tricks, routines, performance sets</div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -794,53 +829,55 @@
 
     <!-- STEP 2: Details -->
     <div class="modal-step" id="session-step-2">
-      <div class="step-nav">
-        <button class="btn btn-sm" onclick="goToSessionStep1()">← Back</button>
-        <span class="step-indicator" id="step2-category-label">Moves &amp; Sleights</span>
-      </div>
-
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Session Timer</div>
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div id="modal-timer-display" style="font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--accent);letter-spacing:.06em;min-width:110px;">00:00:00</div>
-          <div id="modal-timer-status" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);flex:1;">Ready</div>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-primary btn-sm" id="ms-start-btn"  onclick="msStart()">▶ Start</button>
-            <button class="btn btn-sm"             id="ms-pause-btn"  onclick="msPause()"  style="display:none;">⏸ Pause</button>
-            <button class="btn btn-sm"             id="ms-resume-btn" onclick="msResume()" style="display:none;">▶ Resume</button>
-            <button class="btn btn-sm"             id="ms-stop-btn"   onclick="msStop()"   style="display:none;border-color:var(--red);color:var(--red);">■ Stop</button>
-          </div>
+      <div class="modal-title" style="padding-bottom:14px;margin-bottom:0;border-bottom:1px solid var(--border);">
+        <div class="step-nav" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">
+          <button class="btn btn-sm" onclick="goToSessionStep1()">← Back</button>
+          <span class="step-indicator" id="step2-category-label">Moves &amp; Sleights</span>
         </div>
       </div>
-
-      <div class="grid-2">
-        <div class="form-group"><label>Date</label><input type="date" id="s-date"></div>
-        <div class="form-group"><label>Duration (minutes)</label><input type="number" id="s-duration" placeholder="e.g. 45 — or use timer" min="1"></div>
-      </div>
-      <div class="form-group"><label>Session Title</label><input type="text" id="s-title" placeholder="e.g. Double Lift drills, Ambitious Card work…"></div>
-      <div class="form-group">
-        <label>Focus Area</label>
-        <select id="s-focus" onchange="onFocusChange(this.value)">
-          <option value="">— Select focus —</option>
-        </select>
-      </div>
-      <div class="form-group checklist-section" id="section-moves">
-        <label>Moves Practiced</label>
-        <div class="checklist" id="s-moves-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No moves in your library yet.</div></div>
-      </div>
-      <div class="form-group checklist-section" id="section-tricks">
-        <label>Tricks Practiced</label>
-        <div class="checklist" id="s-tricks-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No tricks in your library yet.</div></div>
-      </div>
-      <div class="form-group"><label>Notes</label><textarea id="s-notes" placeholder="What went well? What needs more work? Any breakthroughs?"></textarea></div>
-      <div class="form-group">
-        <label>Session Quality</label>
-        <div class="star-rating" id="s-rating" data-val="0">
-          <span class="star" data-v="1" onclick="setRating('s-rating',1)">★</span>
-          <span class="star" data-v="2" onclick="setRating('s-rating',2)">★</span>
-          <span class="star" data-v="3" onclick="setRating('s-rating',3)">★</span>
-          <span class="star" data-v="4" onclick="setRating('s-rating',4)">★</span>
-          <span class="star" data-v="5" onclick="setRating('s-rating',5)">★</span>
+      <div class="modal-body">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:16px;">
+          <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Session Timer</div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div id="modal-timer-display" style="font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--accent);letter-spacing:.06em;min-width:110px;">00:00:00</div>
+            <div id="modal-timer-status" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);flex:1;">Ready</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-primary btn-sm" id="ms-start-btn"  onclick="msStart()">▶ Start</button>
+              <button class="btn btn-sm"             id="ms-pause-btn"  onclick="msPause()"  style="display:none;">⏸ Pause</button>
+              <button class="btn btn-sm"             id="ms-resume-btn" onclick="msResume()" style="display:none;">▶ Resume</button>
+              <button class="btn btn-sm"             id="ms-stop-btn"   onclick="msStop()"   style="display:none;border-color:var(--red);color:var(--red);">■ Stop</button>
+            </div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Date</label><input type="date" id="s-date"></div>
+          <div class="form-group"><label>Duration (minutes)</label><input type="number" id="s-duration" placeholder="e.g. 45 — or use timer" min="1"></div>
+        </div>
+        <div class="form-group"><label>Session Title</label><input type="text" id="s-title" placeholder="e.g. Double Lift drills, Ambitious Card work…"></div>
+        <div class="form-group">
+          <label>Focus Area</label>
+          <select id="s-focus" onchange="onFocusChange(this.value)">
+            <option value="">— Select focus —</option>
+          </select>
+        </div>
+        <div class="form-group checklist-section" id="section-moves">
+          <label>Moves Practiced</label>
+          <div class="checklist" id="s-moves-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No moves in your library yet.</div></div>
+        </div>
+        <div class="form-group checklist-section" id="section-tricks">
+          <label>Tricks Practiced</label>
+          <div class="checklist" id="s-tricks-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No tricks in your library yet.</div></div>
+        </div>
+        <div class="form-group"><label>Notes</label><textarea id="s-notes" placeholder="What went well? What needs more work? Any breakthroughs?"></textarea></div>
+        <div class="form-group">
+          <label>Session Quality</label>
+          <div class="star-rating" id="s-rating" data-val="0">
+            <span class="star" data-v="1" onclick="setRating('s-rating',1)">★</span>
+            <span class="star" data-v="2" onclick="setRating('s-rating',2)">★</span>
+            <span class="star" data-v="3" onclick="setRating('s-rating',3)">★</span>
+            <span class="star" data-v="4" onclick="setRating('s-rating',4)">★</span>
+            <span class="star" data-v="5" onclick="setRating('s-rating',5)">★</span>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -856,37 +893,39 @@
 <div class="modal-overlay" id="modal-move">
   <div class="modal">
     <div class="modal-title">Add Move / <em>Sleight</em></div>
-    <input type="hidden" id="m-id">
-    <div class="form-group"><label>Move Name</label><input type="text" id="m-name" placeholder="e.g. Double Lift, Classic Pass, Hindu Shuffle…"></div>
-    <div class="grid-2">
-      <div class="form-group">
-        <label>Category</label>
-        <select id="m-category">
-          <option>Control</option><option>False Shuffle</option><option>False Cut</option>
-          <option>Force</option><option>Palm</option><option>Switch</option>
-          <option>Production</option><option>Vanish</option><option>Flourish</option><option>Other</option>
-        </select>
+    <div class="modal-body">
+      <input type="hidden" id="m-id">
+      <div class="form-group"><label>Move Name</label><input type="text" id="m-name" placeholder="e.g. Double Lift, Classic Pass, Hindu Shuffle…"></div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Category</label>
+          <select id="m-category">
+            <option>Control</option><option>False Shuffle</option><option>False Cut</option>
+            <option>Force</option><option>Palm</option><option>Switch</option>
+            <option>Production</option><option>Vanish</option><option>Flourish</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Skill Level</label>
+          <select id="m-level">
+            <option value="beginner">Beginner</option>
+            <option value="developing">Developing</option>
+            <option value="proficient">Proficient</option>
+            <option value="performance">Performance Ready</option>
+          </select>
+        </div>
       </div>
+      <div class="form-group"><label>Source / Reference</label><input type="text" id="m-source" placeholder="e.g. Card College Vol.1, Expert at the Card Table…"></div>
+      <div class="form-group"><label>Personal Notes</label><textarea id="m-notes" placeholder="Tips, trouble spots, muscle memory cues…"></textarea></div>
       <div class="form-group">
-        <label>Skill Level</label>
-        <select id="m-level">
-          <option value="beginner">Beginner</option>
-          <option value="developing">Developing</option>
-          <option value="proficient">Proficient</option>
-          <option value="performance">Performance Ready</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label>Source / Reference</label><input type="text" id="m-source" placeholder="e.g. Card College Vol.1, Expert at the Card Table…"></div>
-    <div class="form-group"><label>Personal Notes</label><textarea id="m-notes" placeholder="Tips, trouble spots, muscle memory cues…"></textarea></div>
-    <div class="form-group">
-      <label>Confidence Rating</label>
-      <div class="star-rating" id="m-rating" data-val="0">
-        <span class="star" data-v="1" onclick="setRating('m-rating',1)">★</span>
-        <span class="star" data-v="2" onclick="setRating('m-rating',2)">★</span>
-        <span class="star" data-v="3" onclick="setRating('m-rating',3)">★</span>
-        <span class="star" data-v="4" onclick="setRating('m-rating',4)">★</span>
-        <span class="star" data-v="5" onclick="setRating('m-rating',5)">★</span>
+        <label>Confidence Rating</label>
+        <div class="star-rating" id="m-rating" data-val="0">
+          <span class="star" data-v="1" onclick="setRating('m-rating',1)">★</span>
+          <span class="star" data-v="2" onclick="setRating('m-rating',2)">★</span>
+          <span class="star" data-v="3" onclick="setRating('m-rating',3)">★</span>
+          <span class="star" data-v="4" onclick="setRating('m-rating',4)">★</span>
+          <span class="star" data-v="5" onclick="setRating('m-rating',5)">★</span>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -900,35 +939,37 @@
 <div class="modal-overlay" id="modal-trick">
   <div class="modal">
     <div class="modal-title">Add Trick / <em>Routine</em></div>
-    <input type="hidden" id="t-id">
-    <div class="form-group"><label>Trick Name</label><input type="text" id="t-name" placeholder="e.g. Ambitious Card, Out of This World…"></div>
-    <div class="grid-2">
-      <div class="form-group">
-        <label>Type</label>
-        <select id="t-type"><option>Trick</option><option>Routine</option><option>Set</option><option>Open-Index</option></select>
+    <div class="modal-body">
+      <input type="hidden" id="t-id">
+      <div class="form-group"><label>Trick Name</label><input type="text" id="t-name" placeholder="e.g. Ambitious Card, Out of This World…"></div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Type</label>
+          <select id="t-type"><option>Trick</option><option>Routine</option><option>Set</option><option>Open-Index</option></select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="t-status">
+            <option value="learning">Learning</option>
+            <option value="drilling">Drilling</option>
+            <option value="performance">Performance Ready</option>
+            <option value="retired">Retired</option>
+          </select>
+        </div>
       </div>
+      <div class="form-group"><label>Tutorial / Reference Link</label><input type="url" id="t-link" placeholder="https://…"></div>
+      <div class="form-group"><label>Moves / Sleights Used</label><input type="text" id="t-moves" placeholder="e.g. Double Lift, Top Palm, Hindu Force…"></div>
+      <div class="form-group"><label>Source / Creator</label><input type="text" id="t-source" placeholder="e.g. Dai Vernon, Tarbell Course, Paul Harris…"></div>
+      <div class="form-group"><label>Performance Notes</label><textarea id="t-notes" placeholder="Patter ideas, reset requirements, audience reactions…"></textarea></div>
       <div class="form-group">
-        <label>Status</label>
-        <select id="t-status">
-          <option value="learning">Learning</option>
-          <option value="drilling">Drilling</option>
-          <option value="performance">Performance Ready</option>
-          <option value="retired">Retired</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label>Tutorial / Reference Link</label><input type="url" id="t-link" placeholder="https://…"></div>
-    <div class="form-group"><label>Moves / Sleights Used</label><input type="text" id="t-moves" placeholder="e.g. Double Lift, Top Palm, Hindu Force…"></div>
-    <div class="form-group"><label>Source / Creator</label><input type="text" id="t-source" placeholder="e.g. Dai Vernon, Tarbell Course, Paul Harris…"></div>
-    <div class="form-group"><label>Performance Notes</label><textarea id="t-notes" placeholder="Patter ideas, reset requirements, audience reactions…"></textarea></div>
-    <div class="form-group">
-      <label>Overall Rating</label>
-      <div class="star-rating" id="t-rating" data-val="0">
-        <span class="star" data-v="1" onclick="setRating('t-rating',1)">★</span>
-        <span class="star" data-v="2" onclick="setRating('t-rating',2)">★</span>
-        <span class="star" data-v="3" onclick="setRating('t-rating',3)">★</span>
-        <span class="star" data-v="4" onclick="setRating('t-rating',4)">★</span>
-        <span class="star" data-v="5" onclick="setRating('t-rating',5)">★</span>
+        <label>Overall Rating</label>
+        <div class="star-rating" id="t-rating" data-val="0">
+          <span class="star" data-v="1" onclick="setRating('t-rating',1)">★</span>
+          <span class="star" data-v="2" onclick="setRating('t-rating',2)">★</span>
+          <span class="star" data-v="3" onclick="setRating('t-rating',3)">★</span>
+          <span class="star" data-v="4" onclick="setRating('t-rating',4)">★</span>
+          <span class="star" data-v="5" onclick="setRating('t-rating',5)">★</span>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -942,7 +983,7 @@
 <div class="modal-overlay" id="modal-view-session">
   <div class="modal">
     <div class="modal-title" id="vs-title">Session</div>
-    <div id="vs-body"></div>
+    <div class="modal-body"><div id="vs-body"></div></div>
     <div class="modal-footer">
       <button class="btn btn-danger btn-sm" id="vs-delete-btn">Delete</button>
       <button class="btn" onclick="closeModal('modal-view-session')">Close</button>
