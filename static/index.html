@@ -574,12 +574,21 @@
   .suit.red { color: var(--red); }
   .highlight { color: var(--accent); }
 
+  @media (max-width: 1100px) {
+    /* Session cards: stack info and hide the rating to make room */
+    .session-item { grid-template-columns: auto 1fr; }
+    .session-rating { display: none; }
+    .session-info .meta { flex-wrap: wrap; gap: 6px; }
+  }
+
   @media (max-width: 800px) {
     .app { grid-template-columns: 1fr; }
     aside { display: none; }
     main { padding: 16px; }
     .grid-4, .grid-3 { grid-template-columns: 1fr 1fr; }
     .grid-2 { grid-template-columns: 1fr; }
+    .session-item { grid-template-columns: auto 1fr; }
+    .session-rating { display: none; }
   }
 </style>
 </head>
