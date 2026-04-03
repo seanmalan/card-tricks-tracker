@@ -7,7 +7,7 @@ COPY requirements-server.txt .
 RUN pip install --no-cache-dir -r requirements-server.txt
 
 # Copy app files
-COPY app.py database.py server.py ./
+COPY app.py database.py server.py seed.py ./
 COPY static/ ./static/
 
 # Database lives in a mounted volume at /data
