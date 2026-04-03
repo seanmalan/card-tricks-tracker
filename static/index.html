@@ -1116,9 +1116,7 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('open');
 }
 
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
-});
+// Outside clicks do not close modals — user must use Cancel or Close button
 
 // ---- STAR RATING ----
 function setRating(id, val) {
