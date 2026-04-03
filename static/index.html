@@ -336,6 +336,93 @@
     letter-spacing: 0.06em;
   }
 
+  /* TRICKS SEARCH + ALPHA INDEX */
+  .tricks-search-bar {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .tricks-search-bar input {
+    width: 100%;
+    padding: 10px 16px 10px 38px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+  }
+  .tricks-search-bar input:focus { outline: none; border-color: var(--accent); }
+  .tricks-search-bar input::placeholder { color: var(--text3); }
+  .tricks-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  .tricks-body {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .tricks-body #tricks-list { flex: 1; min-width: 0; }
+
+  .alpha-index {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    position: sticky;
+    top: 80px;
+    flex-shrink: 0;
+    width: 22px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 0;
+    align-items: center;
+  }
+  .alpha-index a {
+    font-size: 10px;
+    color: var(--text3);
+    text-decoration: none;
+    line-height: 1.6;
+    width: 18px;
+    text-align: center;
+    border-radius: 3px;
+    transition: color 0.1s, background 0.1s;
+  }
+  .alpha-index a:hover { color: var(--accent); background: var(--surface3, rgba(255,255,255,0.04)); }
+  .alpha-index a.alpha-active { color: var(--accent); font-weight: 700; }
+  .alpha-index a.alpha-empty { color: var(--border); pointer-events: none; }
+
+  .tricks-letter-heading {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    padding: 12px 0 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+    scroll-margin-top: 80px;
+  }
+  .tricks-no-results {
+    color: var(--text3);
+    font-size: 13px;
+    padding: 24px 0;
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .alpha-index { width: 18px; }
+    .alpha-index a { font-size: 9px; width: 14px; }
+  }
+
   /* CHECKLIST (session modal) */
   .checklist {
     max-height: 150px;
@@ -747,12 +834,19 @@
           <button class="btn btn-primary" onclick="openModal('modal-trick')">+ Add Trick</button>
         </div>
       </div>
-      <div id="tricks-list">
-        <div class="empty-state">
-          <div class="icon">◈</div>
-          <p>No tricks tracked yet.<br>Add your current repertoire.</p>
-          <button class="btn btn-primary" onclick="openModal('modal-trick')">Add First Trick</button>
+      <div class="tricks-search-bar">
+        <input type="text" id="tricks-search" placeholder="Search tricks &amp; routines…" oninput="filterTricks()" autocomplete="off">
+        <span class="tricks-search-icon">⌕</span>
+      </div>
+      <div class="tricks-body">
+        <div id="tricks-list">
+          <div class="empty-state">
+            <div class="icon">◈</div>
+            <p>No tricks tracked yet.<br>Add your current repertoire.</p>
+            <button class="btn btn-primary" onclick="openModal('modal-trick')">Add First Trick</button>
+          </div>
         </div>
+        <div class="alpha-index" id="tricks-alpha-index"></div>
       </div>
     </div>
 
@@ -1388,33 +1482,79 @@ const statusBadgeClass = {
   performance: 'level-performance', retired: 'level-retired'
 };
 
+function trickCardHTML(t, showActions) {
+  return `<div class="item-card">
+    <div class="item-header">
+      <div class="item-name">${t.name}</div>
+      <div class="item-category">${t.type}</div>
+      <span class="level-badge ${statusBadgeClass[t.status] || 'level-learning'}">${t.status}</span>
+    </div>
+    <div class="item-meta">
+      <span>Rating: <span style="color:var(--accent)">${renderStars(t.rating)}</span></span>
+      ${t.source ? `<span>✍ ${t.source}</span>` : ''}
+      ${t.last_practiced ? `<span class="item-practiced">Last practiced: ${t.last_practiced} · ${t.practice_count}×</span>` : '<span class="item-practiced">Never practiced</span>'}
+    </div>
+    ${t.moves_used ? `<div style="margin-top:6px">${t.moves_used.split(',').map(m=>`<span class="tag">${m.trim()}</span>`).join('')}</div>` : ''}
+    ${t.notes ? `<div class="item-notes">${t.notes}</div>` : ''}
+    ${showActions ? `<div class="item-actions">
+      <button class="btn btn-sm btn-green" onclick="markPracticed(${t.id})">✓ Practiced Today</button>
+      ${t.link ? `<a href="${t.link}" target="_blank" class="item-link btn btn-sm">▶ Tutorial</a>` : ''}
+      <button class="btn btn-sm" onclick="editTrick(${t.id})">Edit</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteTrick(${t.id})">Delete</button>
+    </div>` : ''}
+  </div>`;
+}
+
 function renderTricks(containerId, list) {
   const target = document.getElementById(containerId);
   if (!target) return;
-  if (!list.length) { target.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0">No tricks tracked yet.</div>'; return; }
+  if (!list.length) {
+    target.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0">No tricks tracked yet.</div>';
+    if (containerId === 'tricks-list') buildAlphaIndex([]);
+    return;
+  }
   const showActions = containerId === 'tricks-list';
-  target.innerHTML = list.map(t => `
-    <div class="item-card">
-      <div class="item-header">
-        <div class="item-name">${t.name}</div>
-        <div class="item-category">${t.type}</div>
-        <span class="level-badge ${statusBadgeClass[t.status] || 'level-learning'}">${t.status}</span>
-      </div>
-      <div class="item-meta">
-        <span>Rating: <span style="color:var(--accent)">${renderStars(t.rating)}</span></span>
-        ${t.source ? `<span>✍ ${t.source}</span>` : ''}
-        ${t.last_practiced ? `<span class="item-practiced">Last practiced: ${t.last_practiced} · ${t.practice_count}×</span>` : '<span class="item-practiced">Never practiced</span>'}
-      </div>
-      ${t.moves_used ? `<div style="margin-top:6px">${t.moves_used.split(',').map(m=>`<span class="tag">${m.trim()}</span>`).join('')}</div>` : ''}
-      ${t.notes ? `<div class="item-notes">${t.notes}</div>` : ''}
-      ${showActions ? `<div class="item-actions">
-        <button class="btn btn-sm btn-green" onclick="markPracticed(${t.id})">✓ Practiced Today</button>
-        ${t.link ? `<a href="${t.link}" target="_blank" class="item-link btn btn-sm">▶ Tutorial</a>` : ''}
-        <button class="btn btn-sm" onclick="editTrick(${t.id})">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteTrick(${t.id})">Delete</button>
-      </div>` : ''}
-    </div>
-  `).join('');
+  if (!showActions) {
+    target.innerHTML = list.map(t => trickCardHTML(t, false)).join('');
+    return;
+  }
+  // Alphabetical grouped render for the main tricks page
+  const sorted = [...list].sort((a, b) => a.name.localeCompare(b.name));
+  const groups = {};
+  sorted.forEach(t => {
+    const letter = t.name[0].toUpperCase();
+    if (!groups[letter]) groups[letter] = [];
+    groups[letter].push(t);
+  });
+  let html = '';
+  Object.keys(groups).sort().forEach(letter => {
+    html += `<div class="tricks-letter-heading" id="tricks-letter-${letter}">${letter}</div>`;
+    html += groups[letter].map(t => trickCardHTML(t, true)).join('');
+  });
+  target.innerHTML = html;
+  buildAlphaIndex(Object.keys(groups));
+}
+
+function buildAlphaIndex(activeLetters) {
+  const idx = document.getElementById('tricks-alpha-index');
+  if (!idx) return;
+  const all = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  idx.innerHTML = all.map(l => {
+    const has = activeLetters.includes(l);
+    return `<a href="#tricks-letter-${l}" class="${has ? 'alpha-active' : 'alpha-empty'}"
+      onclick="${has ? `event.preventDefault();document.getElementById('tricks-letter-${l}').scrollIntoView({behavior:'smooth',block:'start'})` : 'event.preventDefault()'}">
+      ${l}</a>`;
+  }).join('');
+}
+
+function filterTricks() {
+  const q = document.getElementById('tricks-search').value.trim().toLowerCase();
+  const filtered = q ? tricks.filter(t => t.name.toLowerCase().includes(q) || (t.type || '').toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q)) : tricks;
+  renderTricks('tricks-list', filtered);
+  if (q && filtered.length === 0) {
+    document.getElementById('tricks-list').innerHTML = `<div class="tricks-no-results">No tricks match "<strong>${q}</strong>"</div>`;
+    buildAlphaIndex([]);
+  }
 }
 
 // ---- DASHBOARD RENDER ----
