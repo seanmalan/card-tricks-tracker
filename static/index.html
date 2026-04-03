@@ -362,6 +362,11 @@
   .check-item .check-icon { color: var(--text3); font-size: 15px; min-width: 16px; }
   .check-item.selected .check-icon { color: var(--accent); }
 
+  .checklist-section label { transition: color 0.2s; }
+  .checklist-section.active-focus label { color: var(--accent); }
+  .checklist-section.active-focus .checklist { border-color: rgba(201,168,76,0.4); }
+  .checklist-section.inactive-focus { opacity: 0.45; }
+
   /* PROGRESS BARS */
   .progress-bar { height: 4px; background: var(--surface3); border-radius: 2px; margin-top: 8px; overflow: hidden; }
   .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.4s ease; }
@@ -761,7 +766,7 @@
     <div class="form-group"><label>Session Title</label><input type="text" id="s-title" placeholder="e.g. Double Lift drills, Ambitious Card work…"></div>
     <div class="form-group">
       <label>Focus Area</label>
-      <select id="s-focus">
+      <select id="s-focus" onchange="onFocusChange(this.value)">
         <option value="">— General practice —</option>
         <option>Sleight of Hand</option>
         <option>Controls &amp; Breaks</option>
@@ -774,11 +779,11 @@
         <option>Cardistry</option>
       </select>
     </div>
-    <div class="form-group">
+    <div class="form-group checklist-section" id="section-moves">
       <label>Moves Practiced</label>
       <div class="checklist" id="s-moves-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No moves in your library yet.</div></div>
     </div>
-    <div class="form-group">
+    <div class="form-group checklist-section" id="section-tricks">
       <label>Tricks Practiced</label>
       <div class="checklist" id="s-tricks-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No tricks in your library yet.</div></div>
     </div>
@@ -994,6 +999,23 @@ function getCheckedIds(listId) {
     .map(el => parseInt(el.dataset.id));
 }
 
+const FOCUS_MOVES  = new Set(['Sleight of Hand','Controls & Breaks','False Shuffles / Cuts','Forces','Palming','Cardistry']);
+const FOCUS_TRICKS = new Set(['Specific Tricks','Full Routine Run-through','Performance Practice']);
+
+function onFocusChange(val) {
+  const movesSection  = document.getElementById('section-moves');
+  const tricksSection = document.getElementById('section-tricks');
+  movesSection.classList.remove('active-focus','inactive-focus');
+  tricksSection.classList.remove('active-focus','inactive-focus');
+  if (FOCUS_MOVES.has(val)) {
+    movesSection.classList.add('active-focus');
+    tricksSection.classList.add('inactive-focus');
+  } else if (FOCUS_TRICKS.has(val)) {
+    tricksSection.classList.add('active-focus');
+    movesSection.classList.add('inactive-focus');
+  }
+}
+
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
 }
@@ -1039,6 +1061,7 @@ async function saveSession() {
 function resetSessionForm() {
   ['s-duration','s-title','s-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('s-focus').value = '';
+  onFocusChange('');
   setRating('s-rating', 0);
   document.querySelectorAll('#s-moves-list .check-item, #s-tricks-list .check-item').forEach(el => {
     el.classList.remove('selected');
