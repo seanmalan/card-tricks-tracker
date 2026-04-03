@@ -816,12 +816,19 @@
           <button class="btn btn-primary" onclick="openModal('modal-move')">+ Add Move</button>
         </div>
       </div>
-      <div id="moves-list">
-        <div class="empty-state">
-          <div class="icon">✦</div>
-          <p>No moves tracked yet.<br>Add sleights, controls, shuffles and more.</p>
-          <button class="btn btn-primary" onclick="openModal('modal-move')">Add First Move</button>
+      <div class="tricks-search-bar">
+        <input type="text" id="moves-search" placeholder="Search moves &amp; sleights…" oninput="filterMoves()" autocomplete="off">
+        <span class="tricks-search-icon">⌕</span>
+      </div>
+      <div class="tricks-body">
+        <div id="moves-list">
+          <div class="empty-state">
+            <div class="icon">✦</div>
+            <p>No moves tracked yet.<br>Add sleights, controls, shuffles and more.</p>
+            <button class="btn btn-primary" onclick="openModal('modal-move')">Add First Move</button>
+          </div>
         </div>
+        <div class="alpha-index" id="moves-alpha-index"></div>
       </div>
     </div>
 
@@ -1400,29 +1407,74 @@ async function deleteMove(id) {
   await loadAll();
 }
 
+function moveCardHTML(m, showActions) {
+  return `<div class="item-card">
+    <div class="item-header">
+      <div class="item-name">${m.name}</div>
+      <div class="item-category">${m.category}</div>
+      <span class="level-badge level-${m.level}">${m.level}</span>
+    </div>
+    <div class="item-meta">
+      <span>Confidence: <span style="color:var(--accent)">${renderStars(m.rating)}</span></span>
+      ${m.source ? `<span>📖 ${m.source}</span>` : ''}
+    </div>
+    ${m.notes ? `<div class="item-notes">${m.notes}</div>` : ''}
+    ${showActions ? `<div class="item-actions">
+      <button class="btn btn-sm" onclick="editMove(${m.id})">Edit</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteMove(${m.id})">Delete</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function buildAlphaIndexFor(activeLetters, indexId, letterPrefix) {
+  const idx = document.getElementById(indexId);
+  if (!idx) return;
+  const all = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  idx.innerHTML = all.map(l => {
+    const has = activeLetters.includes(l);
+    return `<a href="#${letterPrefix}-${l}" class="${has ? 'alpha-active' : 'alpha-empty'}"
+      onclick="${has ? `event.preventDefault();document.getElementById('${letterPrefix}-${l}').scrollIntoView({behavior:'smooth',block:'start'})` : 'event.preventDefault()'}">
+      ${l}</a>`;
+  }).join('');
+}
+
 function renderMoves(containerId, list) {
   const target = document.getElementById(containerId);
   if (!target) return;
-  if (!list.length) { target.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0">No moves tracked yet.</div>'; return; }
+  if (!list.length) {
+    target.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0">No moves tracked yet.</div>';
+    if (containerId === 'moves-list') buildAlphaIndexFor([], 'moves-alpha-index', 'moves-letter');
+    return;
+  }
   const showActions = containerId === 'moves-list';
-  target.innerHTML = list.map(m => `
-    <div class="item-card">
-      <div class="item-header">
-        <div class="item-name">${m.name}</div>
-        <div class="item-category">${m.category}</div>
-        <span class="level-badge level-${m.level}">${m.level}</span>
-      </div>
-      <div class="item-meta">
-        <span>Confidence: <span style="color:var(--accent)">${renderStars(m.rating)}</span></span>
-        ${m.source ? `<span>📖 ${m.source}</span>` : ''}
-      </div>
-      ${m.notes ? `<div class="item-notes">${m.notes}</div>` : ''}
-      ${showActions ? `<div class="item-actions">
-        <button class="btn btn-sm" onclick="editMove(${m.id})">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteMove(${m.id})">Delete</button>
-      </div>` : ''}
-    </div>
-  `).join('');
+  if (!showActions) {
+    target.innerHTML = list.map(m => moveCardHTML(m, false)).join('');
+    return;
+  }
+  const sorted = [...list].sort((a, b) => a.name.localeCompare(b.name));
+  const groups = {};
+  sorted.forEach(m => {
+    const letter = m.name[0].toUpperCase();
+    if (!groups[letter]) groups[letter] = [];
+    groups[letter].push(m);
+  });
+  let html = '';
+  Object.keys(groups).sort().forEach(letter => {
+    html += `<div class="tricks-letter-heading" id="moves-letter-${letter}">${letter}</div>`;
+    html += groups[letter].map(m => moveCardHTML(m, true)).join('');
+  });
+  target.innerHTML = html;
+  buildAlphaIndexFor(Object.keys(groups), 'moves-alpha-index', 'moves-letter');
+}
+
+function filterMoves() {
+  const q = document.getElementById('moves-search').value.trim().toLowerCase();
+  const filtered = q ? moves.filter(m => m.name.toLowerCase().includes(q) || (m.category || '').toLowerCase().includes(q) || (m.notes || '').toLowerCase().includes(q)) : moves;
+  renderMoves('moves-list', filtered);
+  if (q && filtered.length === 0) {
+    document.getElementById('moves-list').innerHTML = `<div class="tricks-no-results">No moves match "<strong>${q}</strong>"</div>`;
+    buildAlphaIndexFor([], 'moves-alpha-index', 'moves-letter');
+  }
 }
 
 // ---- TRICKS ----
@@ -1536,15 +1588,7 @@ function renderTricks(containerId, list) {
 }
 
 function buildAlphaIndex(activeLetters) {
-  const idx = document.getElementById('tricks-alpha-index');
-  if (!idx) return;
-  const all = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  idx.innerHTML = all.map(l => {
-    const has = activeLetters.includes(l);
-    return `<a href="#tricks-letter-${l}" class="${has ? 'alpha-active' : 'alpha-empty'}"
-      onclick="${has ? `event.preventDefault();document.getElementById('tricks-letter-${l}').scrollIntoView({behavior:'smooth',block:'start'})` : 'event.preventDefault()'}">
-      ${l}</a>`;
-  }).join('');
+  buildAlphaIndexFor(activeLetters, 'tricks-alpha-index', 'tricks-letter');
 }
 
 function filterTricks() {
