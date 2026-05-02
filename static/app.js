@@ -418,6 +418,10 @@ async function deleteMove(id) {
 const VALID_MOVE_LEVELS = new Set(['beginner','developing','proficient','performance']);
 function moveCardHTML(m, showActions) {
   const safeLevel = VALID_MOVE_LEVELS.has(m.level) ? m.level : 'beginner';
+  const count = Number(m.practice_count) || 0;
+  const lastPracticed = m.last_practiced
+    ? `<span class="item-practiced">Last practiced: ${escapeHTML(m.last_practiced)}</span>`
+    : '<span class="item-practiced">Never practiced</span>';
   return `<div class="item-card">
     <div class="item-header">
       <div class="item-name">${escapeHTML(m.name)}</div>
@@ -427,6 +431,8 @@ function moveCardHTML(m, showActions) {
     <div class="item-meta">
       <span>Confidence: <span style="color:var(--accent)">${renderStars(m.rating)}</span></span>
       ${m.source ? `<span>📖 ${escapeHTML(m.source)}</span>` : ''}
+      ${lastPracticed}
+      <span class="practice-count" title="Total times practised">${count}× practised</span>
     </div>
     ${m.notes ? `<div class="item-notes">${escapeHTML(m.notes)}</div>` : ''}
     ${showActions ? `<div class="item-actions">

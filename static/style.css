@@ -1,19 +1,21 @@
   :root {
-    --bg: #0a1216;
-    --surface: #112028;
-    --surface2: #1a2d36;
-    --surface3: #243a44;
-    --border: #2d434f;
-    --accent: #2eb88a;
-    --accent2: #3fcc99;
-    --accent-rgb: 46,184,138;
-    --red: #e25858;
-    --red-rgb: 226,88,88;
-    --green: #5dc77f;
-    --green-rgb: 93,199,127;
-    --text: #e6efed;
-    --text2: #95acaf;
-    --text3: #5d7378;
+    /* Soft, low-saturation palette: warm charcoal base with light lavender
+       as the primary accent, dusty rose for danger states, sage for success. */
+    --bg: #1d1b22;
+    --surface: #25232c;
+    --surface2: #2c2a34;
+    --surface3: #35323d;
+    --border: #423f4c;
+    --accent: #b8a3d4;
+    --accent2: #cdb9e3;
+    --accent-rgb: 184,163,212;
+    --red: #c98a99;
+    --red-rgb: 201,138,153;
+    --green: #93b8a4;
+    --green-rgb: 147,184,164;
+    --text: #e8e4ee;
+    --text2: #a39ab0;
+    --text3: #6e687a;
     --font-display: 'Playfair Display', serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
