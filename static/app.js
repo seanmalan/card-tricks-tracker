@@ -659,7 +659,6 @@ function trickCardHTML(t, showActions) {
       <span class="practice-count" title="Total times practised">${count}× practised</span>
     </div>
     ${movesTags ? `<div style="margin-top:6px">${movesTags}</div>` : ''}
-    ${t.notes ? `<div class="item-notes">${escapeHTML(t.notes)}</div>` : ''}
     ${showActions ? `<div class="item-actions">
       ${safeLink ? `<a href="${escapeHTML(safeLink)}" target="_blank" rel="noopener noreferrer" class="item-link btn btn-sm" onclick="event.stopPropagation()">▶ Tutorial</a>` : ''}
       <button class="btn btn-sm" ${stop}showTrickHistory(${t.id})">History</button>
