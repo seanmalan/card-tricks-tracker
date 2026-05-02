@@ -240,11 +240,79 @@ def dedupe_seed_duplicates():
     print(f"Dedupe complete: removed {moves_removed} duplicate move(s) and {tricks_removed} duplicate trick(s).")
 
 
+def remove_untouched_seeds():
+    """Remove any starter-library row the user has never customised.
+
+    A row is considered "untouched" if every field still matches the seed
+    defaults exactly: never practiced, no notes/source, default rating, and
+    default level/status. Anything the user has touched (rated, added notes,
+    bumped status, practised) is preserved.
+
+    Already soft-deleted rows are left alone — they're in Recently Deleted
+    and the user can purge them from there if they want.
+    """
+    conn = sqlite3.connect(get_db_path())
+    c = conn.cursor()
+
+    seed_move_names  = [m[0] for m in MOVES]
+    seed_trick_names = [t[0] for t in TRICKS]
+
+    move_placeholders  = ",".join("?" * len(seed_move_names))
+    trick_placeholders = ",".join("?" * len(seed_trick_names))
+
+    moves_cur = c.execute(
+        f"DELETE FROM moves WHERE deleted_at IS NULL "
+        f"AND name IN ({move_placeholders}) "
+        f"AND COALESCE(practice_count, 0) = 0 "
+        f"AND last_practiced IS NULL "
+        f"AND COALESCE(notes,  '') = '' "
+        f"AND COALESCE(source, '') = '' "
+        f"AND COALESCE(rating, 0) = 0 "
+        f"AND COALESCE(level, 'beginner') = 'beginner'",
+        seed_move_names,
+    )
+    moves_removed = moves_cur.rowcount
+
+    tricks_cur = c.execute(
+        f"DELETE FROM tricks WHERE deleted_at IS NULL "
+        f"AND name IN ({trick_placeholders}) "
+        f"AND COALESCE(practice_count, 0) = 0 "
+        f"AND last_practiced IS NULL "
+        f"AND COALESCE(notes,      '') = '' "
+        f"AND COALESCE(source,     '') = '' "
+        f"AND COALESCE(link,       '') = '' "
+        f"AND COALESCE(moves_used, '') = '' "
+        f"AND COALESCE(rating, 0) = 0 "
+        f"AND COALESCE(status, 'learning') = 'learning'",
+        seed_trick_names,
+    )
+    tricks_removed = tricks_cur.rowcount
+
+    # Make sure auto-seed never resurrects them (belt-and-braces — server.py
+    # no longer calls run_seed at all, but if anyone runs `python3 seed.py`
+    # by hand, the flag stops it).
+    c.execute(
+        "INSERT OR REPLACE INTO settings (key, value) VALUES ('initial_seed_done', '1')"
+    )
+
+    conn.commit()
+    conn.close()
+    print(f"Removed {moves_removed} untouched starter move(s) and {tricks_removed} untouched starter trick(s).")
+    print("Anything you'd practised, rated, or made notes on is untouched.")
+
+
 if __name__ == "__main__":
     import sys
     from database import init_db
     init_db()
     if "--dedupe" in sys.argv:
         dedupe_seed_duplicates()
-    else:
+    elif "--remove-untouched-seeds" in sys.argv:
+        remove_untouched_seeds()
+    elif "--seed" in sys.argv:
         run_seed()
+    else:
+        print("Usage:")
+        print("  python3 seed.py --seed                     Add the starter library (only on first run)")
+        print("  python3 seed.py --dedupe                   Collapse duplicate seeded rows")
+        print("  python3 seed.py --remove-untouched-seeds   Remove starter rows you've never touched")

@@ -51,3 +51,51 @@ def test_dedupe_seed_duplicates(db):
         "SELECT value FROM settings WHERE key = 'initial_seed_done'"
     ).fetchone()[0]
     assert flag == "1"
+
+
+def test_remove_untouched_seeds_removes_clean_starters(db):
+    import importlib, seed
+    importlib.reload(seed)
+    seed.run_seed()
+    seed.remove_untouched_seeds()
+    moves = db.get_moves()
+    tricks = db.get_tricks()
+    assert moves == [], "all starter moves were untouched and should be gone"
+    assert tricks == [], "all starter tricks were untouched and should be gone"
+
+
+def test_remove_untouched_seeds_preserves_user_changes(db):
+    import importlib, seed
+    importlib.reload(seed)
+    seed.run_seed()
+
+    # Touch a few rows in different ways
+    moves = db.get_moves()
+    tricks = db.get_tricks()
+    rated = next(m for m in moves if m["name"] == "Classic Pass")
+    noted = next(m for m in moves if m["name"] == "Classic Force")
+    practiced_trick = next(t for t in tricks if t["name"] == "Triumph")
+    statused_trick = next(t for t in tricks if t["name"] == "Ambitious Card")
+
+    db.upsert_move({"id": rated["id"], "name": rated["name"], "rating": 4})
+    db.upsert_move({"id": noted["id"], "name": noted["name"], "notes": "feels solid"})
+    db.create_session({"date": "2026-04-01", "trick_ids": [practiced_trick["id"]]})
+    db.upsert_trick({"id": statused_trick["id"], "name": statused_trick["name"], "status": "drilling"})
+
+    # And add a custom move the seed has never heard of
+    db.upsert_move({"name": "My Custom Cull"})
+
+    seed.remove_untouched_seeds()
+
+    surviving_moves = {m["name"] for m in db.get_moves()}
+    surviving_tricks = {t["name"] for t in db.get_tricks()}
+
+    assert "Classic Pass" in surviving_moves         # rated → kept
+    assert "Classic Force" in surviving_moves        # has notes → kept
+    assert "My Custom Cull" in surviving_moves       # not a seed name → kept
+    assert "Triumph" in surviving_tricks             # practiced → kept
+    assert "Ambitious Card" in surviving_tricks      # status changed → kept
+
+    # Untouched seeds should have been swept
+    assert "Riffle Pass" not in surviving_moves
+    assert "Out of This World" not in surviving_tricks
