@@ -19,7 +19,7 @@ COPY requirements-server.txt .
 RUN pip install --no-cache-dir -r requirements-server.txt
 
 # Copy app files
-COPY app.py database.py server.py seed.py ./
+COPY app.py database.py server.py seed.py seed_notes.py ./
 COPY static/ ./static/
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
