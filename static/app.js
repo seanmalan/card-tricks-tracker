@@ -144,10 +144,6 @@ function goToSessionStep1() {
   document.getElementById('session-step-2').classList.remove('active');
   document.getElementById('cat-moves').classList.remove('selected');
   document.getElementById('cat-tricks').classList.remove('selected');
-  const nextBtn = document.getElementById('step1-next-btn');
-  nextBtn.disabled = true;
-  nextBtn.style.opacity = '0.4';
-  nextBtn.style.cursor = 'not-allowed';
   msReset();
 }
 
@@ -155,10 +151,8 @@ function selectSessionCategory(cat) {
   sessionCategory = cat;
   document.getElementById('cat-moves').classList.toggle('selected', cat === 'moves');
   document.getElementById('cat-tricks').classList.toggle('selected', cat === 'tricks');
-  const nextBtn = document.getElementById('step1-next-btn');
-  nextBtn.disabled = false;
-  nextBtn.style.opacity = '1';
-  nextBtn.style.cursor = 'pointer';
+  // Auto-advance — picking a category IS the choice; no need for a Next click.
+  goToSessionStep2();
 }
 
 function goToSessionStep2() {
