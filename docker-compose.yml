@@ -4,7 +4,17 @@ services:
     container_name: card-tricks-tracker
     ports:
       - "5757:5757"
+    environment:
+      # Wall-clock timezone. Defaults to NZ; override with `TZ=...` in your
+      # shell or .env file (e.g. TZ=Australia/Sydney) if needed.
+      TZ: ${TZ:-Pacific/Auckland}
     volumes:
       # SQLite database persists here on the host machine
       - ./data:/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5757/api/dashboard',timeout=3).status==200 else 1)\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

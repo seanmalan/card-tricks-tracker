@@ -1,1 +1,3 @@
-flask>=3.0.0
+# Server-only deps used by the Docker image (no GUI / pywebview).
+flask>=3.0,<4.0
+waitress>=3.0,<4.0
