@@ -64,6 +64,26 @@ def test_remove_untouched_seeds_removes_clean_starters(db):
     assert tricks == [], "all starter tricks were untouched and should be gone"
 
 
+def test_seed_starter_notes_fills_only_empty_notes(db):
+    import importlib, seed
+    importlib.reload(seed)
+    seed.run_seed()
+
+    # User has written their own notes on Triumph
+    tricks_before = db.get_tricks()
+    triumph = next(t for t in tricks_before if t["name"] == "Triumph")
+    db.upsert_trick({"id": triumph["id"], "name": "Triumph", "notes": "MY OWN HANDLING"})
+
+    seed.seed_starter_notes()
+    tricks_after = db.get_tricks()
+    triumph_after = next(t for t in tricks_after if t["name"] == "Triumph")
+    ambitious_after = next(t for t in tricks_after if t["name"] == "Ambitious Card")
+
+    assert triumph_after["notes"] == "MY OWN HANDLING", "user notes must not be overwritten"
+    assert "Ambitious Card" in ambitious_after["notes"] or "EFFECT" in ambitious_after["notes"], \
+        "empty notes should now have starter content"
+
+
 def test_remove_untouched_seeds_preserves_user_changes(db):
     import importlib, seed
     importlib.reload(seed)

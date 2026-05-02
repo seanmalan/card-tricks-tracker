@@ -173,6 +173,88 @@
       </div>
     </div>
 
+    <!-- TRICK DETAIL -->
+    <div class="page" id="page-trick-detail">
+      <div class="page-header">
+        <button class="btn btn-sm" onclick="nav('tricks')">← Library</button>
+        <div class="page-title" id="td-name">—</div>
+        <span class="level-badge" id="td-status-badge"></span>
+        <div class="page-actions">
+          <button class="btn btn-sm" id="td-tutorial-btn" style="display:none">▶ Tutorial</button>
+          <button class="btn btn-sm" id="td-history-btn">History</button>
+          <button class="btn btn-sm btn-danger" id="td-delete-btn">Delete</button>
+        </div>
+      </div>
+
+      <div class="trick-detail-grid">
+        <div>
+          <div class="panel">
+            <div class="panel-title">
+              Steps &amp; Notes
+              <span class="panel-sub" id="td-saved-msg" style="display:none">— saved</span>
+            </div>
+            <textarea id="td-notes" class="td-notes" placeholder="Write the routine, your handling, performance notes, key moves, scripting…"></textarea>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-primary" onclick="saveTrickDetail()">Save</button>
+              <button class="btn" onclick="resetTrickDetail()">Discard changes</button>
+            </div>
+          </div>
+        </div>
+
+        <aside>
+          <div class="panel">
+            <div class="panel-title">Details</div>
+            <div class="form-group">
+              <label>Type</label>
+              <select id="td-type">
+                <option>Trick</option>
+                <option>Routine</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="td-status">
+                <option value="learning">Learning</option>
+                <option value="drilling">Drilling</option>
+                <option value="performance">Performance Ready</option>
+                <option value="retired">Retired</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Rating</label>
+              <div class="star-rating" id="td-rating" data-val="0">
+                <span class="star" data-v="1" onclick="setRating('td-rating',1)">★</span>
+                <span class="star" data-v="2" onclick="setRating('td-rating',2)">★</span>
+                <span class="star" data-v="3" onclick="setRating('td-rating',3)">★</span>
+                <span class="star" data-v="4" onclick="setRating('td-rating',4)">★</span>
+                <span class="star" data-v="5" onclick="setRating('td-rating',5)">★</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Last Practiced</label>
+              <div id="td-last" class="td-readonly">—</div>
+            </div>
+            <div class="form-group">
+              <label>Times Practised</label>
+              <div id="td-count" class="td-readonly">0</div>
+            </div>
+            <div class="form-group">
+              <label>Source / Creator</label>
+              <input type="text" id="td-source">
+            </div>
+            <div class="form-group">
+              <label>Tutorial Link</label>
+              <input type="text" id="td-link" placeholder="https://…">
+            </div>
+            <div class="form-group">
+              <label>Moves Used</label>
+              <input type="text" id="td-moves" placeholder="comma separated">
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
     <!-- TIMER -->
     <div class="page" id="page-timer">
       <div class="page-header">

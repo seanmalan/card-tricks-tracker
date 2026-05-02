@@ -240,6 +240,54 @@ def dedupe_seed_duplicates():
     print(f"Dedupe complete: removed {moves_removed} duplicate move(s) and {tricks_removed} duplicate trick(s).")
 
 
+def seed_starter_notes():
+    """Populate step-by-step notes for the canonical tricks defined in
+    seed_notes.STARTER_NOTES.
+
+    Only fills tricks where the notes column is currently empty / NULL —
+    NEVER overwrites anything the user has already written. Idempotent.
+    """
+    from seed_notes import STARTER_NOTES
+
+    conn = sqlite3.connect(get_db_path())
+    c = conn.cursor()
+    today = date.today().isoformat()
+
+    filled = 0
+    skipped_existing = 0
+    skipped_missing = 0
+
+    for name, notes in STARTER_NOTES.items():
+        # Match by exact name on active tricks only.
+        rows = c.execute(
+            "SELECT id, COALESCE(notes,'') AS notes FROM tricks "
+            "WHERE name = ? AND deleted_at IS NULL",
+            (name,),
+        ).fetchall()
+
+        if not rows:
+            skipped_missing += 1
+            continue
+
+        for tid, existing in rows:
+            if existing.strip():
+                skipped_existing += 1
+                continue
+            c.execute(
+                "UPDATE tricks SET notes = ?, updated_at = ? WHERE id = ?",
+                (notes, today, tid),
+            )
+            filled += 1
+
+    conn.commit()
+    conn.close()
+    print(f"Filled notes for {filled} trick(s).")
+    if skipped_existing:
+        print(f"Skipped {skipped_existing} that already had notes (left untouched).")
+    if skipped_missing:
+        print(f"Skipped {skipped_missing} starter trick(s) not present in your library.")
+
+
 def remove_untouched_seeds():
     """Remove any starter-library row the user has never customised.
 
@@ -309,10 +357,13 @@ if __name__ == "__main__":
         dedupe_seed_duplicates()
     elif "--remove-untouched-seeds" in sys.argv:
         remove_untouched_seeds()
+    elif "--seed-notes" in sys.argv:
+        seed_starter_notes()
     elif "--seed" in sys.argv:
         run_seed()
     else:
         print("Usage:")
         print("  python3 seed.py --seed                     Add the starter library (only on first run)")
+        print("  python3 seed.py --seed-notes               Fill canonical step-by-step notes on tricks with empty notes")
         print("  python3 seed.py --dedupe                   Collapse duplicate seeded rows")
         print("  python3 seed.py --remove-untouched-seeds   Remove starter rows you've never touched")

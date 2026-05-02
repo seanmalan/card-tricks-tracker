@@ -529,6 +529,84 @@ function editTrick(id) {
   document.getElementById('modal-trick').classList.add('open');
 }
 
+// ---- TRICK DETAIL PAGE ----
+let currentTrickId = null;
+let trickDetailDirty = false;
+
+function openTrickDetail(id) {
+  const t = tricks.find(x => x.id === id);
+  if (!t) return;
+  currentTrickId = id;
+  trickDetailDirty = false;
+
+  document.getElementById('td-name').textContent = t.name;
+  const badge = document.getElementById('td-status-badge');
+  badge.className = 'level-badge ' + (statusBadgeClass[t.status] || 'level-learning');
+  badge.textContent = t.status;
+
+  document.getElementById('td-type').value   = t.type   || 'Trick';
+  document.getElementById('td-status').value = t.status || 'learning';
+  document.getElementById('td-source').value = t.source || '';
+  document.getElementById('td-link').value   = t.link   || '';
+  document.getElementById('td-moves').value  = t.moves_used || '';
+  document.getElementById('td-notes').value  = t.notes  || '';
+  setRating('td-rating', t.rating || 0);
+  document.getElementById('td-last').textContent  = t.last_practiced || 'Never practiced';
+  document.getElementById('td-count').textContent = (Number(t.practice_count) || 0) + '×';
+
+  const tutBtn = document.getElementById('td-tutorial-btn');
+  const safeLink = safeUrl(t.link);
+  if (safeLink) {
+    tutBtn.style.display = '';
+    tutBtn.onclick = () => window.open(safeLink, '_blank', 'noopener,noreferrer');
+  } else {
+    tutBtn.style.display = 'none';
+  }
+  document.getElementById('td-history-btn').onclick = () => showTrickHistory(id);
+  document.getElementById('td-delete-btn').onclick  = async () => {
+    if (await appConfirm('Delete this trick? You can restore it from Settings → Recently Deleted.')) {
+      await api('DELETE', '/tricks/' + id);
+      currentTrickId = null;
+      nav('tricks');
+      await loadAll();
+    }
+  };
+
+  // Track edits so we can warn before navigating away with unsaved changes.
+  ['td-type','td-status','td-source','td-link','td-moves','td-notes'].forEach(fid => {
+    const el = document.getElementById(fid);
+    el.oninput = el.onchange = () => { trickDetailDirty = true; };
+  });
+
+  nav('trick-detail');
+}
+
+async function saveTrickDetail() {
+  if (currentTrickId === null) return;
+  const body = {
+    id:         currentTrickId,
+    name:       document.getElementById('td-name').textContent,
+    type:       document.getElementById('td-type').value,
+    status:     document.getElementById('td-status').value,
+    source:     document.getElementById('td-source').value.trim(),
+    link:       document.getElementById('td-link').value.trim(),
+    moves_used: document.getElementById('td-moves').value.trim(),
+    notes:      document.getElementById('td-notes').value,
+    rating:     getRating('td-rating'),
+  };
+  const res = await api('POST', '/tricks', body);
+  if (!res) return;
+  trickDetailDirty = false;
+  const msg = document.getElementById('td-saved-msg');
+  msg.style.display = 'inline';
+  setTimeout(() => { msg.style.display = 'none'; }, 1800);
+  await loadAll();
+}
+
+function resetTrickDetail() {
+  if (currentTrickId !== null) openTrickDetail(currentTrickId);
+}
+
 async function markPracticed(id) {
   const t = tricks.find(x => x.id === id);
   if (t && t.last_practiced !== todayLocal()) {
@@ -563,7 +641,12 @@ function trickCardHTML(t, showActions) {
     ? `<span class="item-practiced">Last practiced: ${escapeHTML(t.last_practiced)}</span>`
     : '<span class="item-practiced">Never practiced</span>';
   const count = Number(t.practice_count) || 0;
-  return `<div class="item-card">
+  // On the main library, the card body itself navigates to the detail page.
+  // Action buttons stop propagation so they don't double-fire.
+  const cardClass = showActions ? 'item-card is-clickable' : 'item-card';
+  const cardClick = showActions ? `onclick="openTrickDetail(${t.id})"` : '';
+  const stop = 'onclick="event.stopPropagation();';
+  return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">
       <div class="item-name">${escapeHTML(t.name)}</div>
       <div class="item-category">${escapeHTML(t.type)}</div>
@@ -578,10 +661,10 @@ function trickCardHTML(t, showActions) {
     ${movesTags ? `<div style="margin-top:6px">${movesTags}</div>` : ''}
     ${t.notes ? `<div class="item-notes">${escapeHTML(t.notes)}</div>` : ''}
     ${showActions ? `<div class="item-actions">
-      ${safeLink ? `<a href="${escapeHTML(safeLink)}" target="_blank" rel="noopener noreferrer" class="item-link btn btn-sm">▶ Tutorial</a>` : ''}
-      <button class="btn btn-sm" onclick="showTrickHistory(${t.id})">History</button>
-      <button class="btn btn-sm" onclick="editTrick(${t.id})">Edit</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteTrick(${t.id})">Delete</button>
+      ${safeLink ? `<a href="${escapeHTML(safeLink)}" target="_blank" rel="noopener noreferrer" class="item-link btn btn-sm" onclick="event.stopPropagation()">▶ Tutorial</a>` : ''}
+      <button class="btn btn-sm" ${stop}showTrickHistory(${t.id})">History</button>
+      <button class="btn btn-sm" ${stop}editTrick(${t.id})">Edit</button>
+      <button class="btn btn-sm btn-danger" ${stop}deleteTrick(${t.id})">Delete</button>
     </div>` : ''}
   </div>`;
 }

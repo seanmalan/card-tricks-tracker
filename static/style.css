@@ -732,3 +732,55 @@
     letter-spacing: 0.02em;
     border: 1px solid rgba(var(--accent-rgb), 0.25);
   }
+
+  /* ---- Trick detail page ---- */
+  .trick-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+  }
+  @media (max-width: 1000px) {
+    .trick-detail-grid { grid-template-columns: 1fr; }
+  }
+
+  .td-notes {
+    width: 100%;
+    min-height: 520px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.7;
+    padding: 16px;
+    border-radius: 4px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .td-notes:focus { border-color: var(--accent); }
+
+  .td-readonly {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 12px;
+    padding: 9px 12px;
+    border-radius: 4px;
+  }
+
+  /* Click target on the trick library card body. */
+  .item-card.is-clickable { cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
+  .item-card.is-clickable:hover { border-color: var(--accent); }
+
+  /* ---- Highlighted-move pill in the Log Session modal ---- */
+  /* Mustard yellow specifically for the "you've selected this to practise"
+     state — only used inside the session modal so the rest of the UI stays
+     neutral grey. */
+  #modal-session .check-item.selected {
+    background: rgba(212, 184, 95, 0.16);
+    border-color: rgba(212, 184, 95, 0.45);
+  }
+  #modal-session .check-item.selected .check-icon {
+    color: #d4b85f;
+  }
