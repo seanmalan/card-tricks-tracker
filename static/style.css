@@ -1,21 +1,22 @@
   :root {
-    /* Soft, low-saturation palette: warm charcoal base with light lavender
-       as the primary accent, dusty rose for danger states, sage for success. */
-    --bg: #1d1b22;
-    --surface: #25232c;
-    --surface2: #2c2a34;
-    --surface3: #35323d;
-    --border: #423f4c;
-    --accent: #b8a3d4;
-    --accent2: #cdb9e3;
-    --accent-rgb: 184,163,212;
-    --red: #c98a99;
-    --red-rgb: 201,138,153;
-    --green: #93b8a4;
-    --green-rgb: 147,184,164;
-    --text: #e8e4ee;
-    --text2: #a39ab0;
-    --text3: #6e687a;
+    /* Monochrome grey palette. Danger and success retain a faint hue
+       (dusty red / muted sage) just enough to stay legible — everything
+       else is pure neutral grey. */
+    --bg: #1a1a1a;
+    --surface: #232323;
+    --surface2: #2c2c2c;
+    --surface3: #353535;
+    --border: #444444;
+    --accent: #c8c8c8;
+    --accent2: #e0e0e0;
+    --accent-rgb: 200,200,200;
+    --red: #b07474;
+    --red-rgb: 176,116,116;
+    --green: #87a087;
+    --green-rgb: 135,160,135;
+    --text: #ececec;
+    --text2: #9c9c9c;
+    --text3: #6a6a6a;
     --font-display: 'Playfair Display', serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
