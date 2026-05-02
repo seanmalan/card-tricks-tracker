@@ -163,6 +163,27 @@ http://localhost:5757
 
 ---
 
+## Updating the App
+
+When a new version is available, run the included update script — it pulls the latest code and rebuilds the Docker image in one step.
+
+**Mac:**
+1. Open Terminal, go to your `card-tricks-tracker` folder
+2. Run:
+   ```
+   ./update.sh
+   ```
+
+**Windows:**
+1. Open the `card-tricks-tracker` folder in File Explorer
+2. Double-click `update.bat`
+
+> **Important:** Plain `docker compose up -d` does NOT rebuild the image — it reuses whatever was built last time. The update script runs `docker compose up -d --build` for you.
+
+Your data (the `data/tricks.db` file) is left alone — updates never touch it.
+
+---
+
 ## Starting the App After a Restart
 
 If you restart your computer, Docker Desktop needs to be running for the app to work. It should start automatically, but if the app isn't loading:
