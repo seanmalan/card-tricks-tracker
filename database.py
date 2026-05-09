@@ -741,19 +741,19 @@ def get_dashboard_data():
     # 30-day chart: one GROUP BY query, then merge with the date range.
     today = date.today()
     start = (today - timedelta(days=29)).isoformat()
-    counts = {
-        r["date"]: r["c"]
+    agg = {
+        r["date"]: {"count": r["c"], "minutes": r["m"] or 0}
         for r in conn.execute(
-            "SELECT date, COUNT(*) AS c FROM sessions "
-            "WHERE date >= ? AND deleted_at IS NULL GROUP BY date",
+            "SELECT date, COUNT(*) AS c, COALESCE(SUM(duration_mins), 0) AS m "
+            "FROM sessions WHERE date >= ? AND deleted_at IS NULL GROUP BY date",
             (start,),
         ).fetchall()
     }
-    thirty_days = [
-        {"date": (today - timedelta(days=i)).isoformat(),
-         "count": counts.get((today - timedelta(days=i)).isoformat(), 0)}
-        for i in range(29, -1, -1)
-    ]
+    thirty_days = []
+    for i in range(29, -1, -1):
+        d = (today - timedelta(days=i)).isoformat()
+        e = agg.get(d, {"count": 0, "minutes": 0})
+        thirty_days.append({"date": d, "count": e["count"], "minutes": e["minutes"]})
 
     conn.close()
 

@@ -323,8 +323,8 @@ function viewSession(id) {
   const s = sessions.find(x => x.id === id);
   if (!s) return;
   document.getElementById('vs-title').textContent = s.title;
-  const linkedMoves  = (s.linked_moves  || []).map(m => `<span class="tag">${escapeHTML(m.name)}</span>`).join('');
-  const linkedTricks = (s.linked_tricks || []).map(t => `<span class="tag">${escapeHTML(t.name)}</span>`).join('');
+  const linkedMoves  = (s.linked_moves  || []).map(m => `<span class="tag tag-practiced">${escapeHTML(m.name)}</span>`).join('');
+  const linkedTricks = (s.linked_tricks || []).map(t => `<span class="tag tag-practiced">${escapeHTML(t.name)}</span>`).join('');
   document.getElementById('vs-body').innerHTML = `
     <div class="grid-2" style="margin-bottom:12px">
       <div><span style="color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Date</span><br><span>${escapeHTML(formatDate(s.date))}</span></div>
@@ -983,15 +983,15 @@ function updateFreqStats(thirtyDays) {
   const el = id => document.getElementById(id);
   if (!el('freq-week')) return;
   const data = Array.isArray(thirtyDays) ? thirtyDays : [];
+  const ids = ['freq-week','freq-month','freq-streak','freq-min-day','freq-min-month','freq-best'];
   if (!data.length) {
-    el('freq-week').textContent   = '0';
-    el('freq-month').textContent  = '0';
-    el('freq-streak').textContent = '0';
-    el('freq-best').textContent   = '0';
+    ids.forEach(i => { el(i).textContent = '0'; });
     return;
   }
-  const total = data.reduce((acc, d) => acc + (d.count || 0), 0);
-  const weekAvg = (total / (data.length / 7)).toFixed(1).replace(/\.0$/, '');
+  const total    = data.reduce((acc, d) => acc + (d.count   || 0), 0);
+  const totalMin = data.reduce((acc, d) => acc + (d.minutes || 0), 0);
+  const weekAvg  = (total    / (data.length / 7)).toFixed(1).replace(/\.0$/, '');
+  const minDay   = (totalMin / data.length     ).toFixed(1).replace(/\.0$/, '');
   // Streak: count back from today through consecutive days with at least 1 session.
   let streak = 0;
   for (let i = data.length - 1; i >= 0; i--) {
@@ -999,10 +999,12 @@ function updateFreqStats(thirtyDays) {
     else break;
   }
   const best = data.reduce((m, d) => Math.max(m, d.count || 0), 0);
-  el('freq-week').textContent   = weekAvg;
-  el('freq-month').textContent  = total;
-  el('freq-streak').textContent = streak;
-  el('freq-best').textContent   = best;
+  el('freq-week').textContent      = weekAvg;
+  el('freq-month').textContent     = total;
+  el('freq-streak').textContent    = streak;
+  el('freq-min-day').textContent   = minDay;
+  el('freq-min-month').textContent = totalMin;
+  el('freq-best').textContent      = best;
 }
 
 // ---- MODAL SESSION TIMER ----

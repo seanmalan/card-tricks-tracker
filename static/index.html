@@ -58,7 +58,7 @@
         </div>
         <div class="stat-card" data-icon="◈">
           <div class="stat-val" id="dash-tricks">0</div>
-          <div class="stat-label">Tricks / Routines</div>
+          <div class="stat-label">Tricks Tracked</div>
           <div class="stat-sub" id="dash-tricks-perf">— performance ready</div>
         </div>
         <div class="stat-card" data-icon="✦">
@@ -82,21 +82,35 @@
             <span style="font-size:10px;color:var(--text3)">Today</span>
           </div>
           <div class="freq-stats">
-            <div class="freq-stat">
+            <div class="freq-stat" title="Average sessions per week, computed across the last 30 days">
               <div class="freq-stat-val" id="freq-week">0</div>
-              <div class="freq-stat-lbl">Per week avg</div>
+              <div class="freq-stat-lbl">Sessions / week</div>
+              <div class="freq-stat-sub">avg over 30d</div>
             </div>
-            <div class="freq-stat">
+            <div class="freq-stat" title="Total sessions logged in the last 30 days">
               <div class="freq-stat-val" id="freq-month">0</div>
-              <div class="freq-stat-lbl">Last 30 days</div>
+              <div class="freq-stat-lbl">Sessions / month</div>
+              <div class="freq-stat-sub">total in last 30d</div>
             </div>
-            <div class="freq-stat">
+            <div class="freq-stat" title="Consecutive days ending today with at least one session logged">
               <div class="freq-stat-val" id="freq-streak">0</div>
-              <div class="freq-stat-lbl">Current streak</div>
+              <div class="freq-stat-lbl">Day streak</div>
+              <div class="freq-stat-sub">consecutive days</div>
             </div>
-            <div class="freq-stat">
+            <div class="freq-stat" title="Average practice minutes per day across the last 30 days">
+              <div class="freq-stat-val" id="freq-min-day">0</div>
+              <div class="freq-stat-lbl">Min / day</div>
+              <div class="freq-stat-sub">avg over 30d</div>
+            </div>
+            <div class="freq-stat" title="Total practice minutes in the last 30 days">
+              <div class="freq-stat-val" id="freq-min-month">0</div>
+              <div class="freq-stat-lbl">Min / month</div>
+              <div class="freq-stat-sub">total in last 30d</div>
+            </div>
+            <div class="freq-stat" title="Highest number of sessions logged on a single day in the last 30 days">
               <div class="freq-stat-val" id="freq-best">0</div>
               <div class="freq-stat-lbl">Best day</div>
+              <div class="freq-stat-sub">most sessions</div>
             </div>
           </div>
         </div>

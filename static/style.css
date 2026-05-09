@@ -575,7 +575,7 @@
 
   .freq-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     margin-top: 16px;
     padding-top: 16px;
@@ -587,20 +587,29 @@
     border-radius: 4px;
     padding: 10px 8px;
     text-align: center;
+    cursor: help;
   }
   .freq-stat-val {
     font-family: var(--font-mono);
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 500;
     color: var(--accent);
     line-height: 1;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
   }
   .freq-stat-lbl {
-    font-size: 9px;
-    letter-spacing: 0.1em;
+    font-size: 10px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
+    color: var(--text2);
+    line-height: 1.2;
+  }
+  .freq-stat-sub {
+    font-size: 9px;
+    letter-spacing: 0.04em;
     color: var(--text3);
+    margin-top: 3px;
+    line-height: 1.2;
   }
   @media (max-width: 600px) {
     .freq-stats { grid-template-columns: repeat(2, 1fr); }
@@ -727,6 +736,16 @@
     padding: 2px 7px;
     border-radius: 3px;
     margin: 2px 2px 0 0;
+  }
+
+  .tag-practiced {
+    background: rgba(212, 184, 95, 0.55);
+    color: #ffffff;
+    border: 1px solid #d4b85f;
+    font-weight: 600;
+    font-size: 18px;
+    padding: 4px 10px;
+    letter-spacing: 0.04em;
   }
 
   .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
