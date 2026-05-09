@@ -15,10 +15,14 @@
   <header>
     <div class="logo"><span>♠</span> Card Shark</div>
     <div class="tagline">Practice Tracker</div>
+    <div class="header-clock">
+      <div class="time" id="hdr-time">--:--</div>
+      <div class="date" id="hdr-date">—</div>
+    </div>
     <div class="stats-bar">
       <div class="stat-pill"><div class="val" id="hdr-sessions">0</div><div class="lbl">Sessions</div></div>
-      <div class="stat-pill"><div class="val" id="hdr-moves">0</div><div class="lbl">Moves</div></div>
       <div class="stat-pill"><div class="val" id="hdr-tricks">0</div><div class="lbl">Tricks</div></div>
+      <div class="stat-pill"><div class="val" id="hdr-moves">0</div><div class="lbl">Sleights</div></div>
       <div class="stat-pill"><div class="val" id="hdr-hours">0h</div><div class="lbl">Total Time</div></div>
     </div>
   </header>
@@ -29,8 +33,8 @@
     <div class="nav-item active" onclick="nav('dashboard')"><span class="icon">◆</span> Dashboard</div>
     <div class="nav-item" onclick="nav('sessions')"><span class="icon">◉</span> Sessions <span class="badge" id="nav-sessions-count">0</span></div>
     <div class="nav-section">Library</div>
-    <div class="nav-item" onclick="nav('moves')"><span class="icon">✦</span> Moves &amp; Sleights <span class="badge" id="nav-moves-count">0</span></div>
-    <div class="nav-item" onclick="nav('tricks')"><span class="icon">◈</span> Tricks &amp; Routines <span class="badge" id="nav-tricks-count">0</span></div>
+    <div class="nav-item" onclick="nav('moves')"><span class="icon">✦</span> Sleights <span class="badge" id="nav-moves-count">0</span></div>
+    <div class="nav-item" onclick="nav('tricks')"><span class="icon">◈</span> Tricks <span class="badge" id="nav-tricks-count">0</span></div>
   </aside>
 
   <!-- MAIN -->
@@ -52,20 +56,20 @@
           <div class="stat-label">Total Sessions</div>
           <div class="stat-sub" id="dash-last-session">No sessions yet</div>
         </div>
-        <div class="stat-card" data-icon="◷">
-          <div class="stat-val" id="dash-hours">0</div>
-          <div class="stat-label">Hours Practiced</div>
-          <div class="stat-sub" id="dash-avg-session">— avg per session</div>
-        </div>
-        <div class="stat-card" data-icon="✦">
-          <div class="stat-val" id="dash-moves">0</div>
-          <div class="stat-label">Moves Tracked</div>
-          <div class="stat-sub" id="dash-moves-perf">— performance ready</div>
-        </div>
         <div class="stat-card" data-icon="◈">
           <div class="stat-val" id="dash-tricks">0</div>
           <div class="stat-label">Tricks / Routines</div>
           <div class="stat-sub" id="dash-tricks-perf">— performance ready</div>
+        </div>
+        <div class="stat-card" data-icon="✦">
+          <div class="stat-val" id="dash-moves">0</div>
+          <div class="stat-label">Sleights Tracked</div>
+          <div class="stat-sub" id="dash-moves-perf">— performance ready</div>
+        </div>
+        <div class="stat-card" data-icon="◷">
+          <div class="stat-val" id="dash-hours">0</div>
+          <div class="stat-label">Hours Practiced</div>
+          <div class="stat-sub" id="dash-avg-session">— avg per session</div>
         </div>
       </div>
 
@@ -76,6 +80,24 @@
           <div style="display:flex;justify-content:space-between;margin-top:6px">
             <span style="font-size:10px;color:var(--text3)">30 days ago</span>
             <span style="font-size:10px;color:var(--text3)">Today</span>
+          </div>
+          <div class="freq-stats">
+            <div class="freq-stat">
+              <div class="freq-stat-val" id="freq-week">0</div>
+              <div class="freq-stat-lbl">Per week avg</div>
+            </div>
+            <div class="freq-stat">
+              <div class="freq-stat-val" id="freq-month">0</div>
+              <div class="freq-stat-lbl">Last 30 days</div>
+            </div>
+            <div class="freq-stat">
+              <div class="freq-stat-val" id="freq-streak">0</div>
+              <div class="freq-stat-lbl">Current streak</div>
+            </div>
+            <div class="freq-stat">
+              <div class="freq-stat-val" id="freq-best">0</div>
+              <div class="freq-stat-lbl">Best day</div>
+            </div>
           </div>
         </div>
         <div class="panel">
@@ -97,9 +119,9 @@
           </div>
         </div>
         <div class="panel">
-          <div class="panel-title">Moves Needing Work</div>
+          <div class="panel-title">Sleights in Progress</div>
           <div id="dash-moves-list" class="dash-scroll-list">
-            <div style="color:var(--text3);font-size:12px;padding:10px 0">No moves tracked yet.</div>
+            <div style="color:var(--text3);font-size:12px;padding:10px 0">No sleights tracked yet.</div>
           </div>
         </div>
       </div>
@@ -126,22 +148,22 @@
     <!-- MOVES -->
     <div class="page" id="page-moves">
       <div class="page-header">
-        <div class="page-title">Moves &amp; <em>Sleights</em></div>
-        <div class="page-subtitle" id="moves-count-label">0 moves</div>
+        <div class="page-title"><em>Sleights</em></div>
+        <div class="page-subtitle" id="moves-count-label">0 sleights</div>
         <div class="page-actions">
-          <button class="btn btn-primary" onclick="openModal('modal-move')">+ Add Move</button>
+          <button class="btn btn-primary" onclick="openModal('modal-move')">+ Add Sleight</button>
         </div>
       </div>
       <div class="tricks-search-bar">
-        <input type="text" id="moves-search" placeholder="Search moves &amp; sleights…" oninput="filterMoves()" autocomplete="off">
+        <input type="text" id="moves-search" placeholder="Search sleights…" oninput="filterMoves()" autocomplete="off">
         <span class="tricks-search-icon">⌕</span>
       </div>
       <div class="tricks-body">
         <div id="moves-list">
           <div class="empty-state">
             <div class="icon">✦</div>
-            <p>No moves tracked yet.<br>Add sleights, controls, shuffles and more.</p>
-            <button class="btn btn-primary" onclick="openModal('modal-move')">Add First Move</button>
+            <p>No sleights tracked yet.<br>Add controls, shuffles, palms and more.</p>
+            <button class="btn btn-primary" onclick="openModal('modal-move')">Add First Sleight</button>
           </div>
         </div>
         <div class="alpha-index" id="moves-alpha-index"></div>
@@ -151,14 +173,14 @@
     <!-- TRICKS -->
     <div class="page" id="page-tricks">
       <div class="page-header">
-        <div class="page-title">Tricks &amp; <em>Routines</em></div>
+        <div class="page-title"><em>Tricks</em></div>
         <div class="page-subtitle" id="tricks-count-label">0 tricks</div>
         <div class="page-actions">
           <button class="btn btn-primary" onclick="openModal('modal-trick')">+ Add Trick</button>
         </div>
       </div>
       <div class="tricks-search-bar">
-        <input type="text" id="tricks-search" placeholder="Search tricks &amp; routines…" oninput="filterTricks()" autocomplete="off">
+        <input type="text" id="tricks-search" placeholder="Search tricks…" oninput="filterTricks()" autocomplete="off">
         <span class="tricks-search-icon">⌕</span>
       </div>
       <div class="tricks-body">
@@ -255,6 +277,87 @@
       </div>
     </div>
 
+    <!-- MOVE DETAIL -->
+    <div class="page" id="page-move-detail">
+      <div class="page-header">
+        <button class="btn btn-sm" onclick="nav('moves')">← Library</button>
+        <div class="page-title" id="md-name">—</div>
+        <span class="level-badge" id="md-level-badge"></span>
+        <div class="page-actions">
+          <button class="btn btn-sm" id="md-history-btn">History</button>
+          <button class="btn btn-sm btn-danger" id="md-delete-btn">Delete</button>
+        </div>
+      </div>
+
+      <div class="trick-detail-grid">
+        <div>
+          <div class="panel">
+            <div class="panel-title">
+              Notes &amp; Cues
+              <span class="panel-sub" id="md-saved-msg" style="display:none">— saved</span>
+            </div>
+            <textarea id="md-notes" class="td-notes" placeholder="Tips, trouble spots, muscle memory cues, references, handling notes…"></textarea>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-primary" onclick="saveMoveDetail()">Save</button>
+              <button class="btn" onclick="resetMoveDetail()">Discard changes</button>
+            </div>
+          </div>
+        </div>
+
+        <aside>
+          <div class="panel">
+            <div class="panel-title">Details</div>
+            <div class="form-group">
+              <label>Category</label>
+              <select id="md-category">
+                <option>Control</option>
+                <option>False Shuffle</option>
+                <option>False Cut</option>
+                <option>Force</option>
+                <option>Palm</option>
+                <option>Switch</option>
+                <option>Production</option>
+                <option>Vanish</option>
+                <option>Flourish</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Skill Level</label>
+              <select id="md-level">
+                <option value="beginner">Beginner</option>
+                <option value="developing">Developing</option>
+                <option value="proficient">Proficient</option>
+                <option value="performance">Performance Ready</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Confidence Rating</label>
+              <div class="star-rating" id="md-rating" data-val="0">
+                <span class="star" data-v="1" onclick="setRating('md-rating',1)">★</span>
+                <span class="star" data-v="2" onclick="setRating('md-rating',2)">★</span>
+                <span class="star" data-v="3" onclick="setRating('md-rating',3)">★</span>
+                <span class="star" data-v="4" onclick="setRating('md-rating',4)">★</span>
+                <span class="star" data-v="5" onclick="setRating('md-rating',5)">★</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Last Practiced</label>
+              <div id="md-last" class="td-readonly">—</div>
+            </div>
+            <div class="form-group">
+              <label>Times Practised</label>
+              <div id="md-count" class="td-readonly">0</div>
+            </div>
+            <div class="form-group">
+              <label>Source / Reference</label>
+              <input type="text" id="md-source" placeholder="e.g. Card College Vol.1, Expert at the Card Table…">
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
     <!-- TIMER -->
     <div class="page" id="page-timer">
       <div class="page-header">
@@ -338,12 +441,12 @@
         <div class="category-cards">
           <div class="category-card" id="cat-moves" onclick="selectSessionCategory('moves')">
             <div class="cat-icon">✦</div>
-            <div class="cat-title">Moves &amp; Sleights</div>
-            <div class="cat-sub">Sleights, controls, shuffles, palming</div>
+            <div class="cat-title">Sleights</div>
+            <div class="cat-sub">Controls, shuffles, palms, forces</div>
           </div>
           <div class="category-card" id="cat-tricks" onclick="selectSessionCategory('tricks')">
             <div class="cat-icon">◈</div>
-            <div class="cat-title">Tricks &amp; Routines</div>
+            <div class="cat-title">Tricks</div>
             <div class="cat-sub">Full tricks, routines, performance sets</div>
           </div>
         </div>
@@ -387,8 +490,8 @@
           </select>
         </div>
         <div class="form-group checklist-section" id="section-moves">
-          <label>Moves Practiced</label>
-          <div class="checklist" id="s-moves-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No moves in your library yet.</div></div>
+          <label>Sleights Practiced</label>
+          <div class="checklist" id="s-moves-list"><div style="color:var(--text3);font-size:12px;padding:10px 12px">No sleights in your library yet.</div></div>
         </div>
         <div class="form-group checklist-section" id="section-tricks">
           <label>Tricks Practiced</label>
@@ -418,10 +521,10 @@
 <!-- MODAL: ADD MOVE -->
 <div class="modal-overlay" id="modal-move">
   <div class="modal">
-    <div class="modal-title">Add Move / <em>Sleight</em></div>
+    <div class="modal-title">Add <em>Sleight</em></div>
     <div class="modal-body">
       <input type="hidden" id="m-id">
-      <div class="form-group"><label>Move Name</label><input type="text" id="m-name" placeholder="e.g. Double Lift, Classic Pass, Hindu Shuffle…"></div>
+      <div class="form-group"><label>Sleight Name</label><input type="text" id="m-name" placeholder="e.g. Double Lift, Classic Pass, Hindu Shuffle…"></div>
       <div class="grid-2">
         <div class="form-group">
           <label>Category</label>
@@ -456,7 +559,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('modal-move')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveMove()">Save Move</button>
+      <button class="btn btn-primary" onclick="saveMove()">Save Sleight</button>
     </div>
   </div>
 </div>
@@ -464,7 +567,7 @@
 <!-- MODAL: ADD TRICK -->
 <div class="modal-overlay" id="modal-trick">
   <div class="modal">
-    <div class="modal-title">Add Trick / <em>Routine</em></div>
+    <div class="modal-title">Add <em>Trick</em></div>
     <div class="modal-body">
       <input type="hidden" id="t-id">
       <div class="form-group"><label>Trick Name</label><input type="text" id="t-name" placeholder="e.g. Ambitious Card, Out of This World…"></div>
@@ -484,7 +587,7 @@
         </div>
       </div>
       <div class="form-group"><label>Tutorial / Reference Link</label><input type="url" id="t-link" placeholder="https://…"></div>
-      <div class="form-group"><label>Moves / Sleights Used</label><input type="text" id="t-moves" placeholder="e.g. Double Lift, Top Palm, Hindu Force…"></div>
+      <div class="form-group"><label>Sleights Used</label><input type="text" id="t-moves" placeholder="e.g. Double Lift, Top Palm, Hindu Force…"></div>
       <div class="form-group"><label>Source / Creator</label><input type="text" id="t-source" placeholder="e.g. Dai Vernon, Tarbell Course, Paul Harris…"></div>
       <div class="form-group"><label>Performance Notes</label><textarea id="t-notes" placeholder="Patter ideas, reset requirements, audience reactions…"></textarea></div>
       <div class="form-group">

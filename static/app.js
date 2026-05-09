@@ -171,7 +171,7 @@ function goToSessionStep2() {
 
   // Label + reset
   document.getElementById('step2-category-label').textContent =
-    sessionCategory === 'moves' ? 'Moves & Sleights' : 'Tricks & Routines';
+    sessionCategory === 'moves' ? 'Sleights' : 'Tricks';
   document.getElementById('s-date').value = todayLocal();
   setRating('s-rating', 0);
   onFocusChange('');
@@ -184,24 +184,24 @@ function goToSessionStep2() {
 function populateSessionChecklists() {
   const movesList = document.getElementById('s-moves-list');
   if (!moves.length) {
-    movesList.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 12px">No moves in your library yet — add some in Moves & Sleights first.</div>';
+    movesList.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 12px">No sleights in your library yet — add some in Sleights first.</div>';
   } else {
     movesList.innerHTML = moves.map(m => `
       <div class="check-item" data-id="${m.id}" data-type="move" onclick="toggleCheckItem(this)">
         <span class="check-icon">☐</span>
-        <span style="flex:1;font-size:12px">${escapeHTML(m.name)}</span>
+        <span class="check-name" style="flex:1;font-size:12px">${escapeHTML(m.name)}</span>
         <span class="item-category">${escapeHTML(m.category)}</span>
       </div>`).join('');
   }
 
   const tricksList = document.getElementById('s-tricks-list');
   if (!tricks.length) {
-    tricksList.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 12px">No tricks in your library yet — add some in Tricks & Routines first.</div>';
+    tricksList.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 12px">No tricks in your library yet — add some in Tricks first.</div>';
   } else {
     tricksList.innerHTML = tricks.map(t => `
       <div class="check-item" data-id="${t.id}" data-type="trick" onclick="toggleCheckItem(this)">
         <span class="check-icon">☐</span>
-        <span style="flex:1;font-size:12px">${escapeHTML(t.name)}</span>
+        <span class="check-name" style="flex:1;font-size:12px">${escapeHTML(t.name)}</span>
         <span class="level-badge ${statusBadgeClass[t.status] || 'level-learning'}">${escapeHTML(t.status)}</span>
       </div>`).join('');
   }
@@ -376,7 +376,7 @@ function clearMoveForm() {
 
 async function saveMove() {
   const name = document.getElementById('m-name').value.trim();
-  if (!name) { alert('Please enter a move name.'); return; }
+  if (!name) { alert('Please enter a sleight name.'); return; }
   await api('POST', '/moves', {
     id: document.getElementById('m-id').value ? parseInt(document.getElementById('m-id').value) : null,
     name,
@@ -404,7 +404,7 @@ function editMove(id) {
 }
 
 async function deleteMove(id) {
-  if (!await appConfirm('Delete this move? You can restore it from Settings → Recently Deleted.')) return;
+  if (!await appConfirm('Delete this sleight? You can restore it from Settings → Recently Deleted.')) return;
   await api('DELETE', '/moves/' + id);
   await loadAll();
 }
@@ -416,7 +416,10 @@ function moveCardHTML(m, showActions) {
   const lastPracticed = m.last_practiced
     ? `<span class="item-practiced">Last practiced: ${escapeHTML(m.last_practiced)}</span>`
     : '<span class="item-practiced">Never practiced</span>';
-  return `<div class="item-card">
+  const cardClass = showActions ? 'item-card is-clickable' : 'item-card';
+  const cardClick = showActions ? `onclick="openMoveDetail(${m.id})"` : '';
+  const stop = 'onclick="event.stopPropagation();';
+  return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">
       <div class="item-name">${escapeHTML(m.name)}</div>
       <div class="item-category">${escapeHTML(m.category)}</div>
@@ -428,11 +431,10 @@ function moveCardHTML(m, showActions) {
       ${lastPracticed}
       <span class="practice-count" title="Total times practised">${count}× practised</span>
     </div>
-    ${m.notes ? `<div class="item-notes">${escapeHTML(m.notes)}</div>` : ''}
     ${showActions ? `<div class="item-actions">
-      <button class="btn btn-sm" onclick="showMoveHistory(${m.id})">History</button>
-      <button class="btn btn-sm" onclick="editMove(${m.id})">Edit</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteMove(${m.id})">Delete</button>
+      <button class="btn btn-sm" ${stop}showMoveHistory(${m.id})">History</button>
+      <button class="btn btn-sm" ${stop}editMove(${m.id})">Edit</button>
+      <button class="btn btn-sm btn-danger" ${stop}deleteMove(${m.id})">Delete</button>
     </div>` : ''}
   </div>`;
 }
@@ -453,7 +455,7 @@ function renderMoves(containerId, list) {
   const target = document.getElementById(containerId);
   if (!target) return;
   if (!list.length) {
-    target.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0">No moves tracked yet.</div>';
+    target.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px 0">No sleights tracked yet.</div>';
     if (containerId === 'moves-list') buildAlphaIndexFor([], 'moves-alpha-index', 'moves-letter');
     return;
   }
@@ -483,7 +485,7 @@ function filterMoves() {
   const filtered = q ? moves.filter(m => m.name.toLowerCase().includes(q) || (m.category || '').toLowerCase().includes(q) || (m.notes || '').toLowerCase().includes(q)) : moves;
   renderMoves('moves-list', filtered);
   if (q && filtered.length === 0) {
-    document.getElementById('moves-list').innerHTML = `<div class="tricks-no-results">No moves match "<strong>${escapeHTML(q)}</strong>"</div>`;
+    document.getElementById('moves-list').innerHTML = `<div class="tricks-no-results">No sleights match "<strong>${escapeHTML(q)}</strong>"</div>`;
     buildAlphaIndexFor([], 'moves-alpha-index', 'moves-letter');
   }
 }
@@ -607,6 +609,72 @@ function resetTrickDetail() {
   if (currentTrickId !== null) openTrickDetail(currentTrickId);
 }
 
+// ---- MOVE DETAIL PAGE ----
+let currentMoveId = null;
+let moveDetailDirty = false;
+
+function openMoveDetail(id) {
+  const m = moves.find(x => x.id === id);
+  if (!m) return;
+  currentMoveId = id;
+  moveDetailDirty = false;
+
+  const safeLevel = VALID_MOVE_LEVELS.has(m.level) ? m.level : 'beginner';
+  document.getElementById('md-name').textContent = m.name;
+  const badge = document.getElementById('md-level-badge');
+  badge.className = 'level-badge level-' + safeLevel;
+  badge.textContent = m.level;
+
+  document.getElementById('md-category').value = m.category || 'Other';
+  document.getElementById('md-level').value    = safeLevel;
+  document.getElementById('md-source').value   = m.source   || '';
+  document.getElementById('md-notes').value    = m.notes    || '';
+  setRating('md-rating', m.rating || 0);
+  document.getElementById('md-last').textContent  = m.last_practiced || 'Never practiced';
+  document.getElementById('md-count').textContent = (Number(m.practice_count) || 0) + '×';
+
+  document.getElementById('md-history-btn').onclick = () => showMoveHistory(id);
+  document.getElementById('md-delete-btn').onclick  = async () => {
+    if (await appConfirm('Delete this sleight? You can restore it from Settings → Recently Deleted.')) {
+      await api('DELETE', '/moves/' + id);
+      currentMoveId = null;
+      nav('moves');
+      await loadAll();
+    }
+  };
+
+  ['md-category','md-level','md-source','md-notes'].forEach(fid => {
+    const el = document.getElementById(fid);
+    el.oninput = el.onchange = () => { moveDetailDirty = true; };
+  });
+
+  nav('move-detail');
+}
+
+async function saveMoveDetail() {
+  if (currentMoveId === null) return;
+  const body = {
+    id:       currentMoveId,
+    name:     document.getElementById('md-name').textContent,
+    category: document.getElementById('md-category').value,
+    level:    document.getElementById('md-level').value,
+    source:   document.getElementById('md-source').value.trim(),
+    notes:    document.getElementById('md-notes').value,
+    rating:   getRating('md-rating'),
+  };
+  const res = await api('POST', '/moves', body);
+  if (!res) return;
+  moveDetailDirty = false;
+  const msg = document.getElementById('md-saved-msg');
+  msg.style.display = 'inline';
+  setTimeout(() => { msg.style.display = 'none'; }, 1800);
+  await loadAll();
+}
+
+function resetMoveDetail() {
+  if (currentMoveId !== null) openMoveDetail(currentMoveId);
+}
+
 async function markPracticed(id) {
   const t = tricks.find(x => x.id === id);
   if (t && t.last_practiced !== todayLocal()) {
@@ -728,7 +796,7 @@ function buildChart(data) {
 async function showMoveHistory(id) {
   const data = await api('GET', `/moves/${id}/history`);
   if (!data) return;
-  _renderHistory(data, 'Move');
+  _renderHistory(data, 'Sleight');
 }
 
 async function showTrickHistory(id) {
@@ -884,7 +952,7 @@ function updateAll() {
 
   // Page labels
   document.getElementById('sessions-count-label').textContent = sessions.length + ' session' + (sessions.length!==1?'s':'');
-  document.getElementById('moves-count-label').textContent    = moves.length + ' move' + (moves.length!==1?'s':'');
+  document.getElementById('moves-count-label').textContent    = moves.length + ' sleight' + (moves.length!==1?'s':'');
   document.getElementById('tricks-count-label').textContent   = tricks.length + ' trick' + (tricks.length!==1?'s':'');
 
   // Render lists
@@ -895,6 +963,46 @@ function updateAll() {
   renderTricks('dash-tricks-list', d.tricks_in_progress || []);
   renderTricks('tricks-list', tricks);
   buildChart(d.thirty_days);
+  updateFreqStats(d.thirty_days);
+}
+
+// ---- HEADER CLOCK ----
+function tickClock() {
+  const now = new Date();
+  const t = document.getElementById('hdr-time');
+  const dEl = document.getElementById('hdr-date');
+  if (!t || !dEl) return;
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  t.textContent = `${hh}:${mm}`;
+  dEl.textContent = now.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+// ---- PRACTICE FREQUENCY STATS ----
+function updateFreqStats(thirtyDays) {
+  const el = id => document.getElementById(id);
+  if (!el('freq-week')) return;
+  const data = Array.isArray(thirtyDays) ? thirtyDays : [];
+  if (!data.length) {
+    el('freq-week').textContent   = '0';
+    el('freq-month').textContent  = '0';
+    el('freq-streak').textContent = '0';
+    el('freq-best').textContent   = '0';
+    return;
+  }
+  const total = data.reduce((acc, d) => acc + (d.count || 0), 0);
+  const weekAvg = (total / (data.length / 7)).toFixed(1).replace(/\.0$/, '');
+  // Streak: count back from today through consecutive days with at least 1 session.
+  let streak = 0;
+  for (let i = data.length - 1; i >= 0; i--) {
+    if ((data[i].count || 0) > 0) streak++;
+    else break;
+  }
+  const best = data.reduce((m, d) => Math.max(m, d.count || 0), 0);
+  el('freq-week').textContent   = weekAvg;
+  el('freq-month').textContent  = total;
+  el('freq-streak').textContent = streak;
+  el('freq-best').textContent   = best;
 }
 
 // ---- MODAL SESSION TIMER ----
@@ -961,4 +1069,6 @@ async function logTimerSession() {
 }
 
 // ---- INIT ----
+tickClock();
+setInterval(tickClock, 30 * 1000);
 loadAll();
