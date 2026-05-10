@@ -367,10 +367,14 @@ function renderSessions(list, containerId, limit) {
 }
 
 // ---- MOVES ----
+const DIFF_LETTER = { easy: 'E', medium: 'M', difficult: 'D' };
+const DIFF_NAME   = { easy: 'Easy', medium: 'Medium', difficult: 'Difficult' };
+
 function clearMoveForm() {
   ['m-id','m-name','m-source','m-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  document.getElementById('m-category').value = 'Control';
-  document.getElementById('m-level').value = 'beginner';
+  document.getElementById('m-category').value   = 'Control';
+  document.getElementById('m-level').value      = 'beginner';
+  document.getElementById('m-difficulty').value = '';
   setRating('m-rating', 0);
 }
 
@@ -380,11 +384,12 @@ async function saveMove() {
   await api('POST', '/moves', {
     id: document.getElementById('m-id').value ? parseInt(document.getElementById('m-id').value) : null,
     name,
-    category: document.getElementById('m-category').value,
-    level: document.getElementById('m-level').value,
-    source: document.getElementById('m-source').value.trim(),
-    notes: document.getElementById('m-notes').value.trim(),
-    rating: getRating('m-rating'),
+    category:   document.getElementById('m-category').value,
+    level:      document.getElementById('m-level').value,
+    difficulty: document.getElementById('m-difficulty').value,
+    source:     document.getElementById('m-source').value.trim(),
+    notes:      document.getElementById('m-notes').value.trim(),
+    rating:     getRating('m-rating'),
   });
   closeModal('modal-move');
   await loadAll();
@@ -393,12 +398,13 @@ async function saveMove() {
 function editMove(id) {
   const m = moves.find(x => x.id === id);
   if (!m) return;
-  document.getElementById('m-id').value       = m.id;
-  document.getElementById('m-name').value     = m.name;
-  document.getElementById('m-category').value = m.category;
-  document.getElementById('m-level').value    = m.level;
-  document.getElementById('m-source').value   = m.source || '';
-  document.getElementById('m-notes').value    = m.notes  || '';
+  document.getElementById('m-id').value         = m.id;
+  document.getElementById('m-name').value       = m.name;
+  document.getElementById('m-category').value   = m.category;
+  document.getElementById('m-level').value      = m.level;
+  document.getElementById('m-difficulty').value = m.difficulty || '';
+  document.getElementById('m-source').value     = m.source || '';
+  document.getElementById('m-notes').value      = m.notes  || '';
   setRating('m-rating', m.rating);
   document.getElementById('modal-move').classList.add('open');
 }
@@ -419,8 +425,14 @@ function moveCardHTML(m, showActions) {
   const cardClass = showActions ? 'item-card is-clickable' : 'item-card';
   const cardClick = showActions ? `onclick="openMoveDetail(${m.id})"` : '';
   const stop = 'onclick="event.stopPropagation();';
+  const diffLetter = DIFF_LETTER[m.difficulty] || '';
+  const diffName   = DIFF_NAME[m.difficulty]   || '';
+  const diffBadge  = diffLetter
+    ? `<span class="method-badge diff-${m.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
+    : '';
   return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">
+      ${diffBadge}
       <div class="item-name">${escapeHTML(m.name)}</div>
       <div class="item-category">${escapeHTML(m.category)}</div>
       <span class="level-badge level-${safeLevel}">${escapeHTML(m.level)}</span>
@@ -491,10 +503,14 @@ function filterMoves() {
 }
 
 // ---- TRICKS ----
+const METHOD_LETTER = { self_working: 'S', mnemonics: 'M', fluffy: 'F' };
+const METHOD_NAME   = { self_working: 'Self-working', mnemonics: 'Mnemonics', fluffy: 'Fluffy' };
+
 function clearTrickForm() {
   ['t-id','t-name','t-moves','t-source','t-notes','t-link'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('t-type').value   = 'Trick';
   document.getElementById('t-status').value = 'learning';
+  document.getElementById('t-method').value = '';
   setRating('t-rating', 0);
 }
 
@@ -506,6 +522,7 @@ async function saveTrick() {
     name,
     type:      document.getElementById('t-type').value,
     status:    document.getElementById('t-status').value,
+    method:    document.getElementById('t-method').value,
     link:      document.getElementById('t-link').value.trim(),
     moves_used: document.getElementById('t-moves').value.trim(),
     source:    document.getElementById('t-source').value.trim(),
@@ -523,6 +540,7 @@ function editTrick(id) {
   document.getElementById('t-name').value   = t.name;
   document.getElementById('t-type').value   = t.type;
   document.getElementById('t-status').value = t.status;
+  document.getElementById('t-method').value = t.method || '';
   document.getElementById('t-link').value   = t.link   || '';
   document.getElementById('t-moves').value  = t.moves_used || '';
   document.getElementById('t-source').value = t.source || '';
@@ -545,9 +563,19 @@ function openTrickDetail(id) {
   const badge = document.getElementById('td-status-badge');
   badge.className = 'level-badge ' + (statusBadgeClass[t.status] || 'level-learning');
   badge.textContent = t.status;
+  const mBadge = document.getElementById('td-method-badge');
+  if (t.method && METHOD_LETTER[t.method]) {
+    mBadge.style.display = '';
+    mBadge.className = 'method-badge method-' + t.method;
+    mBadge.textContent = METHOD_LETTER[t.method];
+    mBadge.title = METHOD_NAME[t.method];
+  } else {
+    mBadge.style.display = 'none';
+  }
 
   document.getElementById('td-type').value   = t.type   || 'Trick';
   document.getElementById('td-status').value = t.status || 'learning';
+  document.getElementById('td-method').value = t.method || '';
   document.getElementById('td-source').value = t.source || '';
   document.getElementById('td-link').value   = t.link   || '';
   document.getElementById('td-moves').value  = t.moves_used || '';
@@ -575,7 +603,7 @@ function openTrickDetail(id) {
   };
 
   // Track edits so we can warn before navigating away with unsaved changes.
-  ['td-type','td-status','td-source','td-link','td-moves','td-notes'].forEach(fid => {
+  ['td-type','td-status','td-method','td-source','td-link','td-moves','td-notes'].forEach(fid => {
     const el = document.getElementById(fid);
     el.oninput = el.onchange = () => { trickDetailDirty = true; };
   });
@@ -590,6 +618,7 @@ async function saveTrickDetail() {
     name:       document.getElementById('td-name').textContent,
     type:       document.getElementById('td-type').value,
     status:     document.getElementById('td-status').value,
+    method:     document.getElementById('td-method').value,
     source:     document.getElementById('td-source').value.trim(),
     link:       document.getElementById('td-link').value.trim(),
     moves_used: document.getElementById('td-moves').value.trim(),
@@ -624,11 +653,21 @@ function openMoveDetail(id) {
   const badge = document.getElementById('md-level-badge');
   badge.className = 'level-badge level-' + safeLevel;
   badge.textContent = m.level;
+  const dBadge = document.getElementById('md-difficulty-badge');
+  if (m.difficulty && DIFF_LETTER[m.difficulty]) {
+    dBadge.style.display = '';
+    dBadge.className = 'method-badge diff-' + m.difficulty;
+    dBadge.textContent = DIFF_LETTER[m.difficulty];
+    dBadge.title = DIFF_NAME[m.difficulty];
+  } else {
+    dBadge.style.display = 'none';
+  }
 
-  document.getElementById('md-category').value = m.category || 'Other';
-  document.getElementById('md-level').value    = safeLevel;
-  document.getElementById('md-source').value   = m.source   || '';
-  document.getElementById('md-notes').value    = m.notes    || '';
+  document.getElementById('md-category').value   = m.category || 'Other';
+  document.getElementById('md-level').value      = safeLevel;
+  document.getElementById('md-difficulty').value = m.difficulty || '';
+  document.getElementById('md-source').value     = m.source   || '';
+  document.getElementById('md-notes').value      = m.notes    || '';
   setRating('md-rating', m.rating || 0);
   document.getElementById('md-last').textContent  = m.last_practiced || 'Never practiced';
   document.getElementById('md-count').textContent = (Number(m.practice_count) || 0) + '×';
@@ -643,7 +682,7 @@ function openMoveDetail(id) {
     }
   };
 
-  ['md-category','md-level','md-source','md-notes'].forEach(fid => {
+  ['md-category','md-level','md-difficulty','md-source','md-notes'].forEach(fid => {
     const el = document.getElementById(fid);
     el.oninput = el.onchange = () => { moveDetailDirty = true; };
   });
@@ -654,13 +693,14 @@ function openMoveDetail(id) {
 async function saveMoveDetail() {
   if (currentMoveId === null) return;
   const body = {
-    id:       currentMoveId,
-    name:     document.getElementById('md-name').textContent,
-    category: document.getElementById('md-category').value,
-    level:    document.getElementById('md-level').value,
-    source:   document.getElementById('md-source').value.trim(),
-    notes:    document.getElementById('md-notes').value,
-    rating:   getRating('md-rating'),
+    id:         currentMoveId,
+    name:       document.getElementById('md-name').textContent,
+    category:   document.getElementById('md-category').value,
+    level:      document.getElementById('md-level').value,
+    difficulty: document.getElementById('md-difficulty').value,
+    source:     document.getElementById('md-source').value.trim(),
+    notes:      document.getElementById('md-notes').value,
+    rating:     getRating('md-rating'),
   };
   const res = await api('POST', '/moves', body);
   if (!res) return;
@@ -714,8 +754,14 @@ function trickCardHTML(t, showActions) {
   const cardClass = showActions ? 'item-card is-clickable' : 'item-card';
   const cardClick = showActions ? `onclick="openTrickDetail(${t.id})"` : '';
   const stop = 'onclick="event.stopPropagation();';
+  const methodLetter = METHOD_LETTER[t.method] || '';
+  const methodName   = METHOD_NAME[t.method]   || '';
+  const methodBadge  = methodLetter
+    ? `<span class="method-badge method-${t.method}" title="${escapeHTML(methodName)}">${methodLetter}</span>`
+    : '';
   return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">
+      ${methodBadge}
       <div class="item-name">${escapeHTML(t.name)}</div>
       <div class="item-category">${escapeHTML(t.type)}</div>
       <span class="level-badge ${badgeClass}">${escapeHTML(t.status)}</span>

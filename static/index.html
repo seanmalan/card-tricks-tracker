@@ -214,6 +214,7 @@
       <div class="page-header">
         <button class="btn btn-sm" onclick="nav('tricks')">← Library</button>
         <div class="page-title" id="td-name">—</div>
+        <span class="method-badge" id="td-method-badge" style="display:none"></span>
         <span class="level-badge" id="td-status-badge"></span>
         <div class="page-actions">
           <button class="btn btn-sm" id="td-tutorial-btn" style="display:none">▶ Tutorial</button>
@@ -257,6 +258,15 @@
               </select>
             </div>
             <div class="form-group">
+              <label>Method</label>
+              <select id="td-method">
+                <option value="">— None —</option>
+                <option value="self_working">Self-working (S)</option>
+                <option value="mnemonics">Mnemonics (M)</option>
+                <option value="fluffy">Fluffy (F)</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>Rating</label>
               <div class="star-rating" id="td-rating" data-val="0">
                 <span class="star" data-v="1" onclick="setRating('td-rating',1)">★</span>
@@ -296,6 +306,7 @@
       <div class="page-header">
         <button class="btn btn-sm" onclick="nav('moves')">← Library</button>
         <div class="page-title" id="md-name">—</div>
+        <span class="method-badge" id="md-difficulty-badge" style="display:none"></span>
         <span class="level-badge" id="md-level-badge"></span>
         <div class="page-actions">
           <button class="btn btn-sm" id="md-history-btn">History</button>
@@ -343,6 +354,15 @@
                 <option value="developing">Developing</option>
                 <option value="proficient">Proficient</option>
                 <option value="performance">Performance Ready</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Difficulty</label>
+              <select id="md-difficulty">
+                <option value="">— None —</option>
+                <option value="easy">Easy (E)</option>
+                <option value="medium">Medium (M)</option>
+                <option value="difficult">Difficult (D)</option>
               </select>
             </div>
             <div class="form-group">
@@ -558,6 +578,15 @@
           </select>
         </div>
       </div>
+      <div class="form-group">
+        <label>Difficulty</label>
+        <select id="m-difficulty">
+          <option value="">— None —</option>
+          <option value="easy">Easy (E)</option>
+          <option value="medium">Medium (M)</option>
+          <option value="difficult">Difficult (D)</option>
+        </select>
+      </div>
       <div class="form-group"><label>Source / Reference</label><input type="text" id="m-source" placeholder="e.g. Card College Vol.1, Expert at the Card Table…"></div>
       <div class="form-group"><label>Personal Notes</label><textarea id="m-notes" placeholder="Tips, trouble spots, muscle memory cues…"></textarea></div>
       <div class="form-group">
@@ -599,6 +628,15 @@
             <option value="retired">Retired</option>
           </select>
         </div>
+      </div>
+      <div class="form-group">
+        <label>Method</label>
+        <select id="t-method">
+          <option value="">— None —</option>
+          <option value="self_working">Self-working (S)</option>
+          <option value="mnemonics">Mnemonics (M)</option>
+          <option value="fluffy">Fluffy (F)</option>
+        </select>
       </div>
       <div class="form-group"><label>Tutorial / Reference Link</label><input type="url" id="t-link" placeholder="https://…"></div>
       <div class="form-group"><label>Sleights Used</label><input type="text" id="t-moves" placeholder="e.g. Double Lift, Top Palm, Hindu Force…"></div>
