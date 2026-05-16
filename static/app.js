@@ -351,6 +351,13 @@ function renderSessions(list, containerId, limit) {
   target.innerHTML = data.map(s => {
     const d = new Date(s.date + 'T12:00:00');
     const notesPreview = s.notes ? escapeHTML(s.notes.slice(0,80)) + (s.notes.length>80?'…':'') : '';
+    const practiced = [
+      ...(s.linked_tricks || []).map(t => t.name),
+      ...(s.linked_moves  || []).map(m => m.name),
+    ];
+    const practicedTags = practiced.length
+      ? `<div class="session-practiced">${practiced.map(n => `<span class="tag tag-practiced">${escapeHTML(n)}</span>`).join('')}</div>`
+      : '';
     return `<div class="session-item" onclick="viewSession(${s.id})">
       <div class="session-date"><div class="day">${d.getDate()}</div><div class="month">${d.toLocaleString('default',{month:'short'})}</div></div>
       <div class="session-info">
@@ -359,6 +366,7 @@ function renderSessions(list, containerId, limit) {
           ${s.duration_mins ? `<span>◷ ${escapeHTML(s.duration_mins + ' min')}</span>` : ''}
           ${s.focus ? `<span class="tag">${escapeHTML(s.focus)}</span>` : ''}
         </div>
+        ${practicedTags}
         ${notesPreview ? `<div class="notes">${notesPreview}</div>` : ''}
       </div>
       <div class="session-rating">${renderStars(s.rating)}</div>
@@ -503,14 +511,15 @@ function filterMoves() {
 }
 
 // ---- TRICKS ----
-const METHOD_LETTER = { self_working: 'S', mnemonics: 'M', fluffy: 'F' };
-const METHOD_NAME   = { self_working: 'Self-working', mnemonics: 'Mnemonics', fluffy: 'Fluffy' };
+const METHOD_LETTER = { self_working: 'S', mnemonics: 'M', fluffy: 'F', knucklebusters: 'K' };
+const METHOD_NAME   = { self_working: 'Self-working', mnemonics: 'Mnemonics', fluffy: 'Fluffy', knucklebusters: 'Knucklebusters' };
 
 function clearTrickForm() {
   ['t-id','t-name','t-moves','t-source','t-notes','t-link'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  document.getElementById('t-type').value   = 'Trick';
-  document.getElementById('t-status').value = 'learning';
-  document.getElementById('t-method').value = '';
+  document.getElementById('t-type').value       = 'Trick';
+  document.getElementById('t-status').value     = 'learning';
+  document.getElementById('t-method').value     = '';
+  document.getElementById('t-difficulty').value = '';
   setRating('t-rating', 0);
 }
 
@@ -520,14 +529,15 @@ async function saveTrick() {
   await api('POST', '/tricks', {
     id: document.getElementById('t-id').value ? parseInt(document.getElementById('t-id').value) : null,
     name,
-    type:      document.getElementById('t-type').value,
-    status:    document.getElementById('t-status').value,
-    method:    document.getElementById('t-method').value,
-    link:      document.getElementById('t-link').value.trim(),
+    type:       document.getElementById('t-type').value,
+    status:     document.getElementById('t-status').value,
+    method:     document.getElementById('t-method').value,
+    difficulty: document.getElementById('t-difficulty').value,
+    link:       document.getElementById('t-link').value.trim(),
     moves_used: document.getElementById('t-moves').value.trim(),
-    source:    document.getElementById('t-source').value.trim(),
-    notes:     document.getElementById('t-notes').value.trim(),
-    rating:    getRating('t-rating'),
+    source:     document.getElementById('t-source').value.trim(),
+    notes:      document.getElementById('t-notes').value.trim(),
+    rating:     getRating('t-rating'),
   });
   closeModal('modal-trick');
   await loadAll();
@@ -536,12 +546,13 @@ async function saveTrick() {
 function editTrick(id) {
   const t = tricks.find(x => x.id === id);
   if (!t) return;
-  document.getElementById('t-id').value     = t.id;
-  document.getElementById('t-name').value   = t.name;
-  document.getElementById('t-type').value   = t.type;
-  document.getElementById('t-status').value = t.status;
-  document.getElementById('t-method').value = t.method || '';
-  document.getElementById('t-link').value   = t.link   || '';
+  document.getElementById('t-id').value         = t.id;
+  document.getElementById('t-name').value       = t.name;
+  document.getElementById('t-type').value       = t.type;
+  document.getElementById('t-status').value     = t.status;
+  document.getElementById('t-method').value     = t.method || '';
+  document.getElementById('t-difficulty').value = t.difficulty || '';
+  document.getElementById('t-link').value       = t.link   || '';
   document.getElementById('t-moves').value  = t.moves_used || '';
   document.getElementById('t-source').value = t.source || '';
   document.getElementById('t-notes').value  = t.notes  || '';
@@ -572,14 +583,24 @@ function openTrickDetail(id) {
   } else {
     mBadge.style.display = 'none';
   }
+  const dBadge = document.getElementById('td-difficulty-badge');
+  if (t.difficulty && DIFF_LETTER[t.difficulty]) {
+    dBadge.style.display = '';
+    dBadge.className = 'method-badge diff-' + t.difficulty;
+    dBadge.textContent = DIFF_LETTER[t.difficulty];
+    dBadge.title = DIFF_NAME[t.difficulty];
+  } else {
+    dBadge.style.display = 'none';
+  }
 
-  document.getElementById('td-type').value   = t.type   || 'Trick';
-  document.getElementById('td-status').value = t.status || 'learning';
-  document.getElementById('td-method').value = t.method || '';
-  document.getElementById('td-source').value = t.source || '';
-  document.getElementById('td-link').value   = t.link   || '';
-  document.getElementById('td-moves').value  = t.moves_used || '';
-  document.getElementById('td-notes').value  = t.notes  || '';
+  document.getElementById('td-type').value       = t.type   || 'Trick';
+  document.getElementById('td-status').value     = t.status || 'learning';
+  document.getElementById('td-method').value     = t.method || '';
+  document.getElementById('td-difficulty').value = t.difficulty || '';
+  document.getElementById('td-source').value     = t.source || '';
+  document.getElementById('td-link').value       = t.link   || '';
+  document.getElementById('td-moves').value      = t.moves_used || '';
+  document.getElementById('td-notes').value      = t.notes  || '';
   setRating('td-rating', t.rating || 0);
   document.getElementById('td-last').textContent  = t.last_practiced || 'Never practiced';
   document.getElementById('td-count').textContent = (Number(t.practice_count) || 0) + '×';
@@ -603,7 +624,7 @@ function openTrickDetail(id) {
   };
 
   // Track edits so we can warn before navigating away with unsaved changes.
-  ['td-type','td-status','td-method','td-source','td-link','td-moves','td-notes'].forEach(fid => {
+  ['td-type','td-status','td-method','td-difficulty','td-source','td-link','td-moves','td-notes'].forEach(fid => {
     const el = document.getElementById(fid);
     el.oninput = el.onchange = () => { trickDetailDirty = true; };
   });
@@ -619,6 +640,7 @@ async function saveTrickDetail() {
     type:       document.getElementById('td-type').value,
     status:     document.getElementById('td-status').value,
     method:     document.getElementById('td-method').value,
+    difficulty: document.getElementById('td-difficulty').value,
     source:     document.getElementById('td-source').value.trim(),
     link:       document.getElementById('td-link').value.trim(),
     moves_used: document.getElementById('td-moves').value.trim(),
@@ -759,8 +781,14 @@ function trickCardHTML(t, showActions) {
   const methodBadge  = methodLetter
     ? `<span class="method-badge method-${t.method}" title="${escapeHTML(methodName)}">${methodLetter}</span>`
     : '';
+  const diffLetter = DIFF_LETTER[t.difficulty] || '';
+  const diffName   = DIFF_NAME[t.difficulty]   || '';
+  const diffBadge  = diffLetter
+    ? `<span class="method-badge diff-${t.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
+    : '';
   return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">
+      ${diffBadge}
       ${methodBadge}
       <div class="item-name">${escapeHTML(t.name)}</div>
       <div class="item-category">${escapeHTML(t.type)}</div>

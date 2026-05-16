@@ -14,6 +14,10 @@
     --red-rgb: 176,116,116;
     --green: #87a087;
     --green-rgb: 135,160,135;
+    --yellow: #d4b85f;
+    --yellow-rgb: 212,184,95;
+    --blue: #7a92b8;
+    --blue-rgb: 122,146,184;
     --text: #ececec;
     --text2: #9c9c9c;
     --text3: #6a6a6a;
@@ -319,6 +323,7 @@
   .session-info .title { font-size: 13px; color: var(--text); margin-bottom: 4px; font-weight: 500; }
   .session-info .meta { font-size: 11px; color: var(--text3); display: flex; gap: 12px; flex-wrap: wrap; }
   .session-info .notes { font-size: 11px; color: var(--text2); margin-top: 6px; font-style: italic; }
+  .session-practiced { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
   .session-rating { color: var(--accent); font-size: 12px; white-space: nowrap; }
 
   /* ITEM CARDS (moves / tricks) */
@@ -547,14 +552,14 @@
   .level-drilling   { background: rgba(var(--green-rgb),0.15); color: var(--green); border: 1px solid rgba(var(--green-rgb),0.3); }
   .level-retired    { background: rgba(212,184,95,0.15); color: #d4b85f; border: 1px solid rgba(212,184,95,0.35); }
 
-  /* Method letter badge: S = Self-working, M = Mnemonics, F = Fluffy. */
+  /* Letter badge: S/M/F/K methods on Tricks, E/M/D difficulty on Sleights & Tricks. */
   .method-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 22px;
     height: 22px;
-    border-radius: 50%;
+    border-radius: 4px;
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
@@ -562,13 +567,14 @@
     flex-shrink: 0;
     cursor: help;
   }
-  .method-self_working { background: rgba(var(--green-rgb), 0.18);  color: var(--green); border: 1px solid rgba(var(--green-rgb), 0.45); }
-  .method-mnemonics    { background: rgba(var(--accent-rgb), 0.18); color: var(--accent); border: 1px solid rgba(var(--accent-rgb), 0.45); }
-  .method-fluffy       { background: rgba(212, 184, 95, 0.18);      color: #d4b85f;       border: 1px solid rgba(212, 184, 95, 0.55); }
+  .method-self_working   { background: rgba(var(--green-rgb), 0.18);  color: var(--green);  border: 1px solid rgba(var(--green-rgb), 0.45); }
+  .method-mnemonics      { background: rgba(var(--yellow-rgb), 0.18); color: var(--yellow); border: 1px solid rgba(var(--yellow-rgb), 0.55); }
+  .method-knucklebusters { background: rgba(var(--red-rgb), 0.18);    color: var(--red);    border: 1px solid rgba(var(--red-rgb), 0.45); }
+  .method-fluffy         { background: rgba(var(--blue-rgb), 0.18);   color: var(--blue);   border: 1px solid rgba(var(--blue-rgb), 0.55); }
 
-  .diff-easy      { background: rgba(var(--green-rgb), 0.18); color: var(--green); border: 1px solid rgba(var(--green-rgb), 0.45); }
-  .diff-medium    { background: rgba(212, 184, 95, 0.18);     color: #d4b85f;      border: 1px solid rgba(212, 184, 95, 0.55); }
-  .diff-difficult { background: rgba(var(--red-rgb), 0.18);   color: var(--red);   border: 1px solid rgba(var(--red-rgb), 0.45); }
+  .diff-easy      { background: rgba(var(--green-rgb), 0.18);  color: var(--green);  border: 1px solid rgba(var(--green-rgb), 0.45); }
+  .diff-medium    { background: rgba(var(--yellow-rgb), 0.18); color: var(--yellow); border: 1px solid rgba(var(--yellow-rgb), 0.55); }
+  .diff-difficult { background: rgba(var(--red-rgb), 0.18);    color: var(--red);    border: 1px solid rgba(var(--red-rgb), 0.45); }
 
   /* DASHBOARD STAT CARDS */
   .stat-card {

@@ -128,6 +128,12 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # difficulty column on tricks: 'easy' | 'medium' | 'difficult' | ''
+    try:
+        c.execute("ALTER TABLE tricks ADD COLUMN difficulty TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+
     conn.commit()
     conn.close()
 
@@ -511,7 +517,7 @@ def get_tricks():
     conn.close()
     return rows_to_list(rows)
 
-VALID_METHODS = {"", "self_working", "mnemonics", "fluffy"}
+VALID_METHODS = {"", "self_working", "mnemonics", "fluffy", "knucklebusters"}
 
 def _normalise_method(value):
     v = (value or "").strip().lower().replace("-", "_").replace(" ", "_")
@@ -521,22 +527,23 @@ def upsert_trick(data):
     conn = get_connection()
     now = date.today().isoformat()
     method = _normalise_method(data.get("method", ""))
+    difficulty = _normalise_difficulty(data.get("difficulty", ""))
     if data.get("id"):
         conn.execute(
-            "UPDATE tricks SET name=?, type=?, status=?, moves_used=?, source=?, notes=?, link=?, rating=?, method=?, updated_at=? WHERE id=?",
+            "UPDATE tricks SET name=?, type=?, status=?, moves_used=?, source=?, notes=?, link=?, rating=?, method=?, difficulty=?, updated_at=? WHERE id=?",
             (data["name"], data.get("type","Trick"), data.get("status","learning"),
              data.get("moves_used",""), data.get("source",""), data.get("notes",""),
-             data.get("link",""), data.get("rating",0), method, now, data["id"]),
+             data.get("link",""), data.get("rating",0), method, difficulty, now, data["id"]),
         )
         trick_id = data["id"]
     else:
         c = conn.cursor()
         c.execute(
-            "INSERT INTO tricks (name, type, status, moves_used, source, notes, link, rating, method, created_at, updated_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO tricks (name, type, status, moves_used, source, notes, link, rating, method, difficulty, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (data["name"], data.get("type","Trick"), data.get("status","learning"),
              data.get("moves_used",""), data.get("source",""), data.get("notes",""),
-             data.get("link",""), data.get("rating",0), method, now, now),
+             data.get("link",""), data.get("rating",0), method, difficulty, now, now),
         )
         trick_id = c.lastrowid
     conn.commit()

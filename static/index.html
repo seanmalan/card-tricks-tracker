@@ -214,6 +214,7 @@
       <div class="page-header">
         <button class="btn btn-sm" onclick="nav('tricks')">← Library</button>
         <div class="page-title" id="td-name">—</div>
+        <span class="method-badge" id="td-difficulty-badge" style="display:none"></span>
         <span class="method-badge" id="td-method-badge" style="display:none"></span>
         <span class="level-badge" id="td-status-badge"></span>
         <div class="page-actions">
@@ -258,12 +259,22 @@
               </select>
             </div>
             <div class="form-group">
+              <label>Difficulty</label>
+              <select id="td-difficulty">
+                <option value="">— None —</option>
+                <option value="easy">Easy (E)</option>
+                <option value="medium">Medium (M)</option>
+                <option value="difficult">Difficult (D)</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>Method</label>
               <select id="td-method">
                 <option value="">— None —</option>
                 <option value="self_working">Self-working (S)</option>
                 <option value="mnemonics">Mnemonics (M)</option>
                 <option value="fluffy">Fluffy (F)</option>
+                <option value="knucklebusters">Knucklebusters (K)</option>
               </select>
             </div>
             <div class="form-group">
@@ -630,12 +641,22 @@
         </div>
       </div>
       <div class="form-group">
+        <label>Difficulty</label>
+        <select id="t-difficulty">
+          <option value="">— None —</option>
+          <option value="easy">Easy (E)</option>
+          <option value="medium">Medium (M)</option>
+          <option value="difficult">Difficult (D)</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Method</label>
         <select id="t-method">
           <option value="">— None —</option>
           <option value="self_working">Self-working (S)</option>
           <option value="mnemonics">Mnemonics (M)</option>
           <option value="fluffy">Fluffy (F)</option>
+          <option value="knucklebusters">Knucklebusters (K)</option>
         </select>
       </div>
       <div class="form-group"><label>Tutorial / Reference Link</label><input type="url" id="t-link" placeholder="https://…"></div>
