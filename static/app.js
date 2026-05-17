@@ -436,7 +436,7 @@ function moveCardHTML(m, showActions) {
   const diffLetter = DIFF_LETTER[m.difficulty] || '';
   const diffName   = DIFF_NAME[m.difficulty]   || '';
   const diffBadge  = diffLetter
-    ? `<span class="method-badge diff-${m.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
+    ? `<span class="diff-badge diff-${m.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
     : '';
   return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">
@@ -586,7 +586,7 @@ function openTrickDetail(id) {
   const dBadge = document.getElementById('td-difficulty-badge');
   if (t.difficulty && DIFF_LETTER[t.difficulty]) {
     dBadge.style.display = '';
-    dBadge.className = 'method-badge diff-' + t.difficulty;
+    dBadge.className = 'diff-badge diff-' + t.difficulty;
     dBadge.textContent = DIFF_LETTER[t.difficulty];
     dBadge.title = DIFF_NAME[t.difficulty];
   } else {
@@ -678,7 +678,7 @@ function openMoveDetail(id) {
   const dBadge = document.getElementById('md-difficulty-badge');
   if (m.difficulty && DIFF_LETTER[m.difficulty]) {
     dBadge.style.display = '';
-    dBadge.className = 'method-badge diff-' + m.difficulty;
+    dBadge.className = 'diff-badge diff-' + m.difficulty;
     dBadge.textContent = DIFF_LETTER[m.difficulty];
     dBadge.title = DIFF_NAME[m.difficulty];
   } else {
@@ -784,7 +784,7 @@ function trickCardHTML(t, showActions) {
   const diffLetter = DIFF_LETTER[t.difficulty] || '';
   const diffName   = DIFF_NAME[t.difficulty]   || '';
   const diffBadge  = diffLetter
-    ? `<span class="method-badge diff-${t.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
+    ? `<span class="diff-badge diff-${t.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
     : '';
   return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">

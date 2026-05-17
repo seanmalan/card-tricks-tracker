@@ -552,14 +552,13 @@
   .level-drilling   { background: rgba(var(--green-rgb),0.15); color: var(--green); border: 1px solid rgba(var(--green-rgb),0.3); }
   .level-retired    { background: rgba(212,184,95,0.15); color: #d4b85f; border: 1px solid rgba(212,184,95,0.35); }
 
-  /* Letter badge: S/M/F/K methods on Tricks, E/M/D difficulty on Sleights & Tricks. */
-  .method-badge {
+  /* Letter badges: square for Trick methods (S/M/F/K), circle for difficulty (E/M/D). */
+  .method-badge, .diff-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 22px;
     height: 22px;
-    border-radius: 4px;
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
@@ -567,6 +566,9 @@
     flex-shrink: 0;
     cursor: help;
   }
+  .method-badge { border-radius: 4px; }
+  .diff-badge   { border-radius: 50%; }
+
   .method-self_working   { background: rgba(var(--green-rgb), 0.18);  color: var(--green);  border: 1px solid rgba(var(--green-rgb), 0.45); }
   .method-mnemonics      { background: rgba(var(--yellow-rgb), 0.18); color: var(--yellow); border: 1px solid rgba(var(--yellow-rgb), 0.55); }
   .method-knucklebusters { background: rgba(var(--red-rgb), 0.18);    color: var(--red);    border: 1px solid rgba(var(--red-rgb), 0.45); }
