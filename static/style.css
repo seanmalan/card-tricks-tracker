@@ -363,6 +363,8 @@
   }
 
   .item-card .item-name { font-size: 14px; color: var(--text); font-weight: 500; flex: 1; }
+  .item-card .item-name-wrap { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+  .item-card .item-name-wrap .item-name { flex: 0 1 auto; }
   .item-card .item-category {
     font-size: 9px;
     letter-spacing: 0.1em;

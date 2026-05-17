@@ -789,8 +789,10 @@ function trickCardHTML(t, showActions) {
   return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">
       ${diffBadge}
-      <div class="item-name">${escapeHTML(t.name)}</div>
-      ${methodBadge}
+      <div class="item-name-wrap">
+        <span class="item-name">${escapeHTML(t.name)}</span>
+        ${methodBadge}
+      </div>
       <div class="item-category">${escapeHTML(t.type)}</div>
       <span class="level-badge ${badgeClass}">${escapeHTML(t.status)}</span>
     </div>
