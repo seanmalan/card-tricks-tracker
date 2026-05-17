@@ -770,12 +770,12 @@
   }
 
   .tag-practiced {
-    background: rgba(212, 184, 95, 0.55);
+    background: rgba(155, 139, 200, 0.55);
     color: #ffffff;
-    border: 1px solid #d4b85f;
+    border: 1px solid #9b8bc8;
     font-weight: 600;
-    font-size: 18px;
-    padding: 4px 10px;
+    font-size: 11px;
+    padding: 3px 8px;
     letter-spacing: 0.04em;
   }
 
