@@ -390,24 +390,25 @@
   .item-dash-include label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
+    gap: 10px;
+    font-size: 13px;
     letter-spacing: 0.04em;
     color: var(--text2);
     cursor: pointer;
     user-select: none;
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 5px 10px;
+    border-radius: 6px;
+    padding: 9px 14px;
+    min-height: 44px;
     transition: border-color 0.15s, color 0.15s;
   }
   .item-dash-include label:hover { border-color: var(--accent); color: var(--text); }
   .item-dash-include input[type="checkbox"] {
     accent-color: var(--accent);
     cursor: pointer;
-    width: 15px;
-    height: 15px;
+    width: 20px;
+    height: 20px;
     flex-shrink: 0;
   }
 
