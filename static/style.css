@@ -383,21 +383,33 @@
   .item-dash-include {
     display: flex;
     justify-content: flex-end;
-    margin-top: 8px;
-    padding-top: 6px;
+    margin-top: 10px;
+    padding-top: 8px;
     border-top: 1px solid var(--border);
   }
   .item-dash-include label {
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    color: var(--text3);
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--text2);
     cursor: pointer;
     user-select: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 10px;
+    transition: border-color 0.15s, color 0.15s;
   }
-  .item-dash-include input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+  .item-dash-include label:hover { border-color: var(--accent); color: var(--text); }
+  .item-dash-include input[type="checkbox"] {
+    accent-color: var(--accent);
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
 
   .item-practiced {
     margin-left: auto;
