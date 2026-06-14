@@ -134,6 +134,13 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # dashboard_include: whether to show in the dashboard in-progress lists
+    for table in ("moves", "tricks"):
+        try:
+            c.execute(f"ALTER TABLE {table} ADD COLUMN dashboard_include INTEGER DEFAULT 1")
+        except sqlite3.OperationalError:
+            pass
+
     conn.commit()
     conn.close()
 
@@ -506,6 +513,15 @@ def purge_move(move_id):
     conn.close()
     return n > 0
 
+def set_move_dashboard_include(move_id, include):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE moves SET dashboard_include = ? WHERE id = ? AND deleted_at IS NULL",
+        (1 if include else 0, move_id),
+    )
+    conn.commit()
+    conn.close()
+
 
 # ---- TRICKS ----
 
@@ -636,6 +652,15 @@ def purge_trick(trick_id):
     conn.close()
     return n > 0
 
+def set_trick_dashboard_include(trick_id, include):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE tricks SET dashboard_include = ? WHERE id = ? AND deleted_at IS NULL",
+        (1 if include else 0, trick_id),
+    )
+    conn.commit()
+    conn.close()
+
 
 # ---- TRASH / RESTORE ----
 
@@ -762,6 +787,7 @@ def get_dashboard_data():
     tricks_in_progress = rows_to_list(
         conn.execute(
             "SELECT * FROM tricks WHERE deleted_at IS NULL AND status IN ('learning','drilling') "
+            "AND (dashboard_include IS NULL OR dashboard_include = 1) "
             "ORDER BY last_practiced ASC NULLS FIRST, updated_at DESC LIMIT 50"
         ).fetchall()
     )
@@ -769,6 +795,7 @@ def get_dashboard_data():
     moves_needing_work = rows_to_list(
         conn.execute(
             "SELECT * FROM moves WHERE deleted_at IS NULL AND level IN ('beginner','developing') "
+            "AND (dashboard_include IS NULL OR dashboard_include = 1) "
             "ORDER BY last_practiced ASC NULLS FIRST, updated_at DESC LIMIT 50"
         ).fetchall()
     )

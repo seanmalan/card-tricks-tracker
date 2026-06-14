@@ -131,6 +131,12 @@ def create_app():
             return jsonify({"ok": False, "error": "Move not found"}), 404
         return jsonify(h)
 
+    @app.route("/api/moves/<int:move_id>/dashboard", methods=["PATCH"])
+    def set_move_dashboard(move_id):
+        data = _json_body()
+        db.set_move_dashboard_include(move_id, data.get("include", True))
+        return jsonify({"ok": True})
+
     # ---- Tricks ----
 
     @app.route("/api/tricks", methods=["GET"])
@@ -173,6 +179,12 @@ def create_app():
         if not h:
             return jsonify({"ok": False, "error": "Trick not found"}), 404
         return jsonify(h)
+
+    @app.route("/api/tricks/<int:trick_id>/dashboard", methods=["PATCH"])
+    def set_trick_dashboard(trick_id):
+        data = _json_body()
+        db.set_trick_dashboard_include(trick_id, data.get("include", True))
+        return jsonify({"ok": True})
 
     # ---- Trash / Restore ----
 

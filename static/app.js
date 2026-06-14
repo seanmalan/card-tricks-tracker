@@ -438,6 +438,7 @@ function moveCardHTML(m, showActions) {
   const diffBadge  = diffLetter
     ? `<span class="diff-badge diff-${m.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
     : '';
+  const dashInclude = m.dashboard_include !== 0;
   return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">
       ${diffBadge}
@@ -455,6 +456,12 @@ function moveCardHTML(m, showActions) {
       <button class="btn btn-sm" ${stop}showMoveHistory(${m.id})">History</button>
       <button class="btn btn-sm" ${stop}editMove(${m.id})">Edit</button>
       <button class="btn btn-sm btn-danger" ${stop}deleteMove(${m.id})">Delete</button>
+    </div>
+    <div class="item-dash-include">
+      <label onclick="event.stopPropagation()">
+        <input type="checkbox" ${dashInclude ? 'checked' : ''} onchange="setMoveDashboard(${m.id}, this.checked)">
+        Include in dashboard
+      </label>
     </div>` : ''}
   </div>`;
 }
@@ -750,6 +757,20 @@ async function markPracticed(id) {
   await loadAll();
 }
 
+async function setTrickDashboard(id, include) {
+  const r = await api('PATCH', '/tricks/' + id + '/dashboard', { include });
+  if (!r) return;
+  const t = tricks.find(x => x.id === id);
+  if (t) t.dashboard_include = include ? 1 : 0;
+}
+
+async function setMoveDashboard(id, include) {
+  const r = await api('PATCH', '/moves/' + id + '/dashboard', { include });
+  if (!r) return;
+  const m = moves.find(x => x.id === id);
+  if (m) m.dashboard_include = include ? 1 : 0;
+}
+
 async function deleteTrick(id) {
   if (!await appConfirm('Delete this trick? You can restore it from Settings → Recently Deleted.')) return;
   await api('DELETE', '/tricks/' + id);
@@ -786,6 +807,7 @@ function trickCardHTML(t, showActions) {
   const diffBadge  = diffLetter
     ? `<span class="diff-badge diff-${t.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
     : '';
+  const dashInclude = t.dashboard_include !== 0;
   return `<div class="${cardClass}" ${cardClick}>
     <div class="item-header">
       ${diffBadge}
@@ -808,6 +830,12 @@ function trickCardHTML(t, showActions) {
       <button class="btn btn-sm" ${stop}showTrickHistory(${t.id})">History</button>
       <button class="btn btn-sm" ${stop}editTrick(${t.id})">Edit</button>
       <button class="btn btn-sm btn-danger" ${stop}deleteTrick(${t.id})">Delete</button>
+    </div>
+    <div class="item-dash-include">
+      <label onclick="event.stopPropagation()">
+        <input type="checkbox" ${dashInclude ? 'checked' : ''} onchange="setTrickDashboard(${t.id}, this.checked)">
+        Include in dashboard
+      </label>
     </div>` : ''}
   </div>`;
 }

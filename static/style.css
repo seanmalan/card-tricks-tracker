@@ -380,6 +380,24 @@
   .item-card .item-actions { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .item-card .item-link { font-size: 11px; color: var(--accent); text-decoration: none; transition: color 0.15s; }
   .item-card .item-link:hover { color: var(--accent2); }
+  .item-dash-include {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .item-dash-include label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    cursor: pointer;
+    user-select: none;
+  }
+  .item-dash-include input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
 
   .item-practiced {
     margin-left: auto;
@@ -606,13 +624,19 @@
   /* CHART */
   .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; margin-top: 12px; }
 
+  .panel:has(.freq-stats) {
+    display: flex;
+    flex-direction: column;
+  }
   .freq-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    align-content: stretch;
     gap: 8px;
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px solid var(--border);
+    flex: 1;
   }
   .freq-stat {
     background: var(--surface2);
@@ -621,6 +645,9 @@
     padding: 10px 8px;
     text-align: center;
     cursor: help;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   .freq-stat-val {
     font-family: var(--font-mono);
