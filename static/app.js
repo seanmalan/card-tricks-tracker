@@ -570,6 +570,7 @@ function editTrick(id) {
 // ---- TRICK DETAIL PAGE ----
 let currentTrickId = null;
 let trickDetailDirty = false;
+let trickNotesTimer = null;
 
 function openTrickDetail(id) {
   const t = tricks.find(x => x.id === id);
@@ -630,17 +631,26 @@ function openTrickDetail(id) {
     }
   };
 
+  clearTimeout(trickNotesTimer);
   // Track edits so we can warn before navigating away with unsaved changes.
   ['td-type','td-status','td-method','td-difficulty','td-source','td-link','td-moves','td-notes'].forEach(fid => {
     const el = document.getElementById(fid);
     el.oninput = el.onchange = () => { trickDetailDirty = true; };
   });
+  // Auto-save notes 1.5 s after the user stops typing.
+  const tdNotesEl = document.getElementById('td-notes');
+  tdNotesEl.oninput = () => {
+    trickDetailDirty = true;
+    clearTimeout(trickNotesTimer);
+    trickNotesTimer = setTimeout(saveTrickDetail, 1500);
+  };
 
   nav('trick-detail');
 }
 
 async function saveTrickDetail() {
   if (currentTrickId === null) return;
+  clearTimeout(trickNotesTimer);
   const body = {
     id:         currentTrickId,
     name:       document.getElementById('td-name').textContent,
@@ -670,6 +680,7 @@ function resetTrickDetail() {
 // ---- MOVE DETAIL PAGE ----
 let currentMoveId = null;
 let moveDetailDirty = false;
+let moveNotesTimer = null;
 
 function openMoveDetail(id) {
   const m = moves.find(x => x.id === id);
@@ -711,16 +722,25 @@ function openMoveDetail(id) {
     }
   };
 
+  clearTimeout(moveNotesTimer);
   ['md-category','md-level','md-difficulty','md-source','md-notes'].forEach(fid => {
     const el = document.getElementById(fid);
     el.oninput = el.onchange = () => { moveDetailDirty = true; };
   });
+  // Auto-save notes 1.5 s after the user stops typing.
+  const mdNotesEl = document.getElementById('md-notes');
+  mdNotesEl.oninput = () => {
+    moveDetailDirty = true;
+    clearTimeout(moveNotesTimer);
+    moveNotesTimer = setTimeout(saveMoveDetail, 1500);
+  };
 
   nav('move-detail');
 }
 
 async function saveMoveDetail() {
   if (currentMoveId === null) return;
+  clearTimeout(moveNotesTimer);
   const body = {
     id:         currentMoveId,
     name:       document.getElementById('md-name').textContent,
