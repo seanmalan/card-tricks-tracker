@@ -515,12 +515,6 @@
           <div style="display:flex;align-items:center;gap:14px;">
             <div id="modal-timer-display" style="font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--accent);letter-spacing:.06em;min-width:110px;">00:00:00</div>
             <div id="modal-timer-status" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);flex:1;">Ready</div>
-            <div style="display:flex;gap:6px;">
-              <button class="btn btn-primary btn-sm" id="ms-start-btn"  onclick="msStart()">▶ Start</button>
-              <button class="btn btn-sm"             id="ms-pause-btn"  onclick="msPause()"  style="display:none;">⏸ Pause</button>
-              <button class="btn btn-sm"             id="ms-resume-btn" onclick="msResume()" style="display:none;">▶ Resume</button>
-              <button class="btn btn-sm"             id="ms-stop-btn"   onclick="msStop()"   style="display:none;border-color:var(--red);color:var(--red);">■ Stop</button>
-            </div>
           </div>
         </div>
         <div class="grid-2">
@@ -556,7 +550,13 @@
       </div>
       <div class="modal-footer">
         <button class="btn" onclick="msReset();closeModal('modal-session')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveSession()">Save Session</button>
+        <div style="display:flex;gap:6px;margin-left:auto;">
+          <button class="btn btn-primary btn-sm" id="ms-start-btn"  onclick="msStart()">▶ Start</button>
+          <button class="btn btn-sm"             id="ms-pause-btn"  onclick="msPause()"  style="display:none;">⏸ Pause</button>
+          <button class="btn btn-sm"             id="ms-resume-btn" onclick="msResume()" style="display:none;">▶ Resume</button>
+          <button class="btn btn-sm"             id="ms-stop-btn"   onclick="msStop()"   style="display:none;border-color:var(--red);color:var(--red);">■ Stop</button>
+          <button class="btn btn-primary" onclick="saveSession()">Save Session</button>
+        </div>
       </div>
     </div>
 
