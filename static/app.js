@@ -478,18 +478,6 @@ function buildAlphaIndexFor(activeLetters, indexId, letterPrefix) {
   }).join('');
 }
 
-function dashMoveRowHTML(m) {
-  const safeLevel = VALID_MOVE_LEVELS.has(m.level) ? m.level : 'beginner';
-  const lastText = m.last_practiced ? 'Last: ' + m.last_practiced : 'Never practiced';
-  return `<div class="dash-item-row" onclick="openMoveDetail(${m.id})">
-    <div class="dash-item-name">${escapeHTML(m.name)}</div>
-    <div class="dash-item-meta">
-      <span class="dash-item-info">${escapeHTML(lastText)}</span>
-      <span class="level-badge level-${safeLevel}">${escapeHTML(m.level)}</span>
-    </div>
-  </div>`;
-}
-
 function renderMoves(containerId, list) {
   const target = document.getElementById(containerId);
   if (!target) return;
@@ -500,7 +488,7 @@ function renderMoves(containerId, list) {
   }
   const showActions = containerId === 'moves-list';
   if (!showActions) {
-    target.innerHTML = list.map(m => dashMoveRowHTML(m)).join('');
+    target.innerHTML = list.map(m => moveCardHTML(m, false)).join('');
     return;
   }
   const sorted = [...list].sort((a, b) => a.name.localeCompare(b.name));
@@ -872,18 +860,6 @@ function trickCardHTML(t, showActions) {
   </div>`;
 }
 
-function dashTrickRowHTML(t) {
-  const badgeClass = statusBadgeClass[t.status] || 'level-learning';
-  const lastText = t.last_practiced ? 'Last: ' + t.last_practiced : 'Never practiced';
-  return `<div class="dash-item-row" onclick="openTrickDetail(${t.id})">
-    <div class="dash-item-name">${escapeHTML(t.name)}</div>
-    <div class="dash-item-meta">
-      <span class="dash-item-info">${escapeHTML(lastText)}</span>
-      <span class="level-badge ${badgeClass}">${escapeHTML(t.status)}</span>
-    </div>
-  </div>`;
-}
-
 function renderTricks(containerId, list) {
   const target = document.getElementById(containerId);
   if (!target) return;
@@ -894,7 +870,7 @@ function renderTricks(containerId, list) {
   }
   const showActions = containerId === 'tricks-list';
   if (!showActions) {
-    target.innerHTML = list.map(t => dashTrickRowHTML(t)).join('');
+    target.innerHTML = list.map(t => trickCardHTML(t, false)).join('');
     return;
   }
   // Alphabetical grouped render for the main tricks page
