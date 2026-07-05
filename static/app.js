@@ -430,8 +430,8 @@ function moveCardHTML(m, showActions) {
   const lastPracticed = m.last_practiced
     ? `<span class="item-practiced">Last practiced: ${escapeHTML(m.last_practiced)}</span>`
     : '<span class="item-practiced">Never practiced</span>';
-  const cardClass = showActions ? 'item-card is-clickable' : 'item-card';
-  const cardClick = showActions ? `onclick="openMoveDetail(${m.id})"` : '';
+  const cardClass = 'item-card is-clickable';
+  const cardClick = `onclick="openMoveDetail(${m.id})"`;
   const stop = 'onclick="event.stopPropagation();';
   const diffLetter = DIFF_LETTER[m.difficulty] || '';
   const diffName   = DIFF_NAME[m.difficulty]   || '';
@@ -478,6 +478,18 @@ function buildAlphaIndexFor(activeLetters, indexId, letterPrefix) {
   }).join('');
 }
 
+function dashMoveRowHTML(m) {
+  const safeLevel = VALID_MOVE_LEVELS.has(m.level) ? m.level : 'beginner';
+  const lastText = m.last_practiced ? 'Last: ' + m.last_practiced : 'Never practiced';
+  return `<div class="dash-item-row" onclick="openMoveDetail(${m.id})">
+    <div class="dash-item-name">${escapeHTML(m.name)}</div>
+    <div class="dash-item-meta">
+      <span class="dash-item-info">${escapeHTML(lastText)}</span>
+      <span class="level-badge level-${safeLevel}">${escapeHTML(m.level)}</span>
+    </div>
+  </div>`;
+}
+
 function renderMoves(containerId, list) {
   const target = document.getElementById(containerId);
   if (!target) return;
@@ -488,7 +500,7 @@ function renderMoves(containerId, list) {
   }
   const showActions = containerId === 'moves-list';
   if (!showActions) {
-    target.innerHTML = list.map(m => moveCardHTML(m, false)).join('');
+    target.innerHTML = list.map(m => dashMoveRowHTML(m)).join('');
     return;
   }
   const sorted = [...list].sort((a, b) => a.name.localeCompare(b.name));
@@ -814,8 +826,8 @@ function trickCardHTML(t, showActions) {
   const count = Number(t.practice_count) || 0;
   // On the main library, the card body itself navigates to the detail page.
   // Action buttons stop propagation so they don't double-fire.
-  const cardClass = showActions ? 'item-card is-clickable' : 'item-card';
-  const cardClick = showActions ? `onclick="openTrickDetail(${t.id})"` : '';
+  const cardClass = 'item-card is-clickable';
+  const cardClick = `onclick="openTrickDetail(${t.id})"`;
   const stop = 'onclick="event.stopPropagation();';
   const methodLetter = METHOD_LETTER[t.method] || '';
   const methodName   = METHOD_NAME[t.method]   || '';
@@ -860,6 +872,18 @@ function trickCardHTML(t, showActions) {
   </div>`;
 }
 
+function dashTrickRowHTML(t) {
+  const badgeClass = statusBadgeClass[t.status] || 'level-learning';
+  const lastText = t.last_practiced ? 'Last: ' + t.last_practiced : 'Never practiced';
+  return `<div class="dash-item-row" onclick="openTrickDetail(${t.id})">
+    <div class="dash-item-name">${escapeHTML(t.name)}</div>
+    <div class="dash-item-meta">
+      <span class="dash-item-info">${escapeHTML(lastText)}</span>
+      <span class="level-badge ${badgeClass}">${escapeHTML(t.status)}</span>
+    </div>
+  </div>`;
+}
+
 function renderTricks(containerId, list) {
   const target = document.getElementById(containerId);
   if (!target) return;
@@ -870,7 +894,7 @@ function renderTricks(containerId, list) {
   }
   const showActions = containerId === 'tricks-list';
   if (!showActions) {
-    target.innerHTML = list.map(t => trickCardHTML(t, false)).join('');
+    target.innerHTML = list.map(t => dashTrickRowHTML(t)).join('');
     return;
   }
   // Alphabetical grouped render for the main tricks page

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Card Shark</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/style.css?v=3">
 </head>
 <body>
 
@@ -212,7 +212,7 @@
     <!-- TRICK DETAIL -->
     <div class="page" id="page-trick-detail">
       <div class="page-header">
-        <button class="btn btn-sm" onclick="nav('tricks')">← Library</button>
+        <button class="btn" onclick="nav('tricks')">← Library</button>
         <div class="page-title" id="td-name">—</div>
         <span class="diff-badge" id="td-difficulty-badge" style="display:none"></span>
         <span class="method-badge" id="td-method-badge" style="display:none"></span>
@@ -315,7 +315,7 @@
     <!-- MOVE DETAIL -->
     <div class="page" id="page-move-detail">
       <div class="page-header">
-        <button class="btn btn-sm" onclick="nav('moves')">← Library</button>
+        <button class="btn" onclick="nav('moves')">← Library</button>
         <div class="page-title" id="md-name">—</div>
         <span class="diff-badge" id="md-difficulty-badge" style="display:none"></span>
         <span class="level-badge" id="md-level-badge"></span>
@@ -762,6 +762,6 @@
   </div>
 </div>
 
-<script src="/static/app.js" defer></script>
+<script src="/static/app.js?v=3" defer></script>
 </body>
 </html>
