@@ -1374,8 +1374,25 @@ function renderIdeasNav() {
   }).filter(Boolean).join('');
 }
 
+// ---- THEMES ----
+const THEMES = ['default', 'miami', 'matrix', 'future'];
+
+function setTheme(name) {
+  if (!THEMES.includes(name)) name = 'default';
+  if (name === 'default') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', name);
+  }
+  localStorage.setItem('theme', name);
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === name);
+  });
+}
+
 // ---- INIT ----
 tickClock();
 setInterval(tickClock, 30 * 1000);
 loadAll();
 renderIdeasNav();
+setTheme(localStorage.getItem('theme') || 'default');
