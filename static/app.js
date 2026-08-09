@@ -1238,6 +1238,18 @@ const IDEAS_QUOTES = [
   { quote: "Technique is the slave of expression, not the master.", author: "Tommy Wonder" },
   { quote: "The best trick is the one you feel most comfortable performing.", author: "Anonymous" },
   { quote: "Magic lives in the space between what the eye sees and what the mind believes.", author: "Anonymous" },
+  { quote: "A card trick is a short story. Every false shuffle is a chapter, every revelation is the ending.", author: "Anonymous" },
+  { quote: "You must unlearn what you have learned — then practise it ten thousand times.", author: "Anonymous" },
+  { quote: "The audience does not applaud the sleight. They applaud the moment of wonder it creates.", author: "Juan Tamariz" },
+  { quote: "If people knew how hard I had to work to gain my mastery, it would not seem so wonderful at all.", author: "Michelangelo" },
+  { quote: "Do not try to create and analyse at the same time. They are different processes.", author: "John Cage" },
+  { quote: "An amateur practises until he can do it right. A professional practises until he cannot do it wrong.", author: "Percy C. Buck" },
+  { quote: "The magician and the pickpocket are the same artist with different intentions.", author: "Anonymous" },
+  { quote: "Astonishment is not a feeling — it is a gap in reality that you put there on purpose.", author: "Anonymous" },
+  { quote: "Never let them see the work. That is the whole secret of magic.", author: "Ricky Jay" },
+  { quote: "The eye sees only what the mind is prepared to comprehend.", author: "Henri Bergson" },
+  { quote: "Confidence is the best palming technique there is.", author: "Anonymous" },
+  { quote: "The real secret of magic is that the world is still enchanted.", author: "Harris Stone" },
 ];
 
 const IDEAS_TIPS = [
@@ -1249,6 +1261,18 @@ const IDEAS_TIPS = [
   { tip: "Rest your hands", detail: "Muscle memory consolidates during sleep. Short daily sessions beat marathon cramming." },
   { tip: "One at a time", detail: "Fully own one trick before adding another. Depth beats breadth in performance magic." },
   { tip: "Know your angles", detail: "Stand up and check your move from a low angle — audiences are often seated." },
+  { tip: "Vary your practice", detail: "Don't always run effects in the same order. Shuffle your practice routine so every move stays fresh in isolation." },
+  { tip: "Borrow a deck", detail: "Practise with unfamiliar cards regularly. Yours are worn in to your hands — a borrowed borrowed deck is a surprise every time." },
+  { tip: "Script your patter", detail: "Write down exactly what you say during a trick, word for word. Then rehearse speech and sleights together." },
+  { tip: "Watch the spectator, not the cards", detail: "Train yourself to look at their face during the key moment. You will learn more about your misdirection than any mirror can tell you." },
+  { tip: "Time your reset", detail: "Know exactly how long it takes to reset each trick. A smooth reset mid-conversation is half the battle in close-up work." },
+  { tip: "Learn the out", detail: "For every trick, know what you'll do if it goes wrong. A confident recovery looks like the plan all along." },
+  { tip: "Practise standing up", detail: "Most sleights are rehearsed seated at a table. Stand up occasionally — your body mechanics change completely." },
+  { tip: "Teach someone else", detail: "Explaining a sleight to a trusted friend forces you to understand it at a deeper level than solo drilling ever will." },
+  { tip: "Name the feeling first", detail: "Before you pick the trick, decide what feeling you want to leave the spectator with. Wonder, unease, delight? Let that choice drive everything else." },
+  { tip: "Cut your losses early", detail: "If an effect hasn't clicked after weeks of work, shelve it. Return with fresh eyes in three months — it will often make sense immediately." },
+  { tip: "Study non-magic performance", detail: "Watch comedians for timing, actors for naturalness, and musicians for how they handle mistakes. The skills transfer directly." },
+  { tip: "Keep a magic journal", detail: "Write a sentence after every practice session — what clicked, what didn't, what you noticed. Patterns emerge that you'd otherwise miss." },
 ];
 
 const CARD_SYMBOLS = ['♠', '♥', '♦', '♣'];
