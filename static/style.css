@@ -348,6 +348,10 @@
   }
 
   .item-card:hover { border-color: var(--border); }
+  .item-card.dash-in { border-color: #3a9a5c; border-width: 2px; }
+  .item-card.dash-out { border-color: #c97a2a; border-width: 2px; }
+  .item-card.is-clickable.dash-in:hover { border-color: #4dbb72; }
+  .item-card.is-clickable.dash-out:hover { border-color: #e08c3a; }
 
   @media (max-width: 1100px) {
     #moves-list, #tricks-list { grid-template-columns: repeat(2, 1fr); }
@@ -693,6 +697,12 @@
   .chart-bar.has-data { background: rgba(var(--accent-rgb),0.45); }
   .chart-bar.today { background: var(--accent); }
   .chart-bar:hover { background: var(--accent2) !important; }
+  .freq-date-row { display: flex; gap: 4px; margin-top: 4px; }
+  .freq-date-cell { flex: 1; font-size: 9px; color: var(--text3); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: clip; }
+  .freq-date-cell.today { color: var(--accent); font-weight: 600; }
+  .freq-practiced-row { display: flex; gap: 4px; margin-top: 2px; }
+  .freq-practiced-cell { flex: 1; font-size: 9px; color: var(--text3); text-align: center; min-height: 12px; }
+  .freq-practiced-cell.has-data { color: var(--accent); font-weight: 600; }
 
   /* BRUSH-UP ALERT */
   .brushup-card {
@@ -946,6 +956,99 @@
   /* Click target on the trick library card body. */
   .item-card.is-clickable { cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
   .item-card.is-clickable:hover { border-color: var(--accent); }
+
+  /* ---- IDEAS PAGE ---- */
+  .ideas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    padding-bottom: 32px;
+  }
+  .idea-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.15s, transform 0.15s;
+    position: relative;
+  }
+  .idea-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .idea-quote { border-left: 3px solid var(--accent); }
+  .idea-tip   { border-left: 3px solid #3a9a5c; }
+  .idea-symbol { font-size: 22px; color: var(--accent); line-height: 1; }
+  .idea-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    font-style: italic;
+    margin: 0;
+  }
+  .idea-author { font-size: 11px; color: var(--text3); letter-spacing: 0.04em; }
+  .idea-tip-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #3a9a5c;
+    font-weight: 600;
+  }
+  .idea-tip-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .idea-tip-detail { font-size: 12px; color: var(--text2); line-height: 1.55; }
+  .idea-fav-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 17px;
+    color: var(--text3);
+    transition: color 0.15s, transform 0.1s;
+    padding: 2px 4px;
+    line-height: 1;
+  }
+  .idea-fav-btn:hover { color: var(--accent); transform: scale(1.2); }
+  .idea-fav-btn.active { color: var(--accent); }
+  .fav-widget {
+    margin: 6px 12px;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .fav-widget:hover { background: rgba(var(--accent-rgb),0.06); border-left-color: var(--accent2); }
+  .fav-widget-tip { border-left-color: #3a9a5c; }
+  .fav-widget-tip:hover { border-left-color: #4dbb72; }
+  .fav-widget-quote {
+    font-size: 10px;
+    color: var(--text2);
+    font-style: italic;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .fav-widget-author {
+    font-size: 9px;
+    color: var(--text3);
+    margin-top: 4px;
+    letter-spacing: 0.03em;
+  }
+  .fav-widget-tip-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .fav-widget-tip-detail {
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
 
   /* ---- Highlighted-move pill in the Log Session modal ---- */
   /* Mustard yellow specifically for the "you've selected this to practise"

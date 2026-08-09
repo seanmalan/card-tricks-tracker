@@ -800,9 +800,9 @@ def get_dashboard_data():
         ).fetchall()
     )
 
-    # 30-day chart: one GROUP BY query, then merge with the date range.
+    # 14-day chart: session counts, minutes, and distinct tricks/moves practiced per day.
     today = date.today()
-    start = (today - timedelta(days=29)).isoformat()
+    start = (today - timedelta(days=13)).isoformat()
     agg = {
         r["date"]: {"count": r["c"], "minutes": r["m"] or 0}
         for r in conn.execute(
@@ -811,11 +811,35 @@ def get_dashboard_data():
             (start,),
         ).fetchall()
     }
+    tricks_agg = {
+        r["date"]: r["tc"]
+        for r in conn.execute(
+            "SELECT s.date, COUNT(DISTINCT st.trick_id) AS tc "
+            "FROM sessions s JOIN session_tricks st ON st.session_id = s.id "
+            "WHERE s.date >= ? AND s.deleted_at IS NULL GROUP BY s.date",
+            (start,),
+        ).fetchall()
+    }
+    moves_agg = {
+        r["date"]: r["mc"]
+        for r in conn.execute(
+            "SELECT s.date, COUNT(DISTINCT sm.move_id) AS mc "
+            "FROM sessions s JOIN session_moves sm ON sm.session_id = s.id "
+            "WHERE s.date >= ? AND s.deleted_at IS NULL GROUP BY s.date",
+            (start,),
+        ).fetchall()
+    }
     thirty_days = []
-    for i in range(29, -1, -1):
+    for i in range(13, -1, -1):
         d = (today - timedelta(days=i)).isoformat()
         e = agg.get(d, {"count": 0, "minutes": 0})
-        thirty_days.append({"date": d, "count": e["count"], "minutes": e["minutes"]})
+        thirty_days.append({
+            "date": d,
+            "count": e["count"],
+            "minutes": e["minutes"],
+            "tricks": tricks_agg.get(d, 0),
+            "moves": moves_agg.get(d, 0),
+        })
 
     conn.close()
 

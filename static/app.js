@@ -118,6 +118,7 @@ function nav(page) {
     if (n.getAttribute('onclick') === `nav('${page}')`) n.classList.add('active');
   });
   if (page === 'settings') refreshTrash();
+  if (page === 'ideas') renderIdeas();
 }
 
 // ---- MODAL ----
@@ -439,7 +440,8 @@ function moveCardHTML(m, showActions) {
     ? `<span class="diff-badge diff-${m.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
     : '';
   const dashInclude = m.dashboard_include !== 0;
-  return `<div class="${cardClass}" ${cardClick}>
+  const borderClass = showActions ? (dashInclude ? ' dash-in' : ' dash-out') : '';
+  return `<div class="${cardClass}${borderClass}" data-move-id="${m.id}" ${cardClick}>
     <div class="item-header">
       ${diffBadge}
       <div class="item-name">${escapeHTML(m.name)}</div>
@@ -782,6 +784,11 @@ async function setTrickDashboard(id, include) {
   if (!r) return;
   const t = tricks.find(x => x.id === id);
   if (t) t.dashboard_include = include ? 1 : 0;
+  const card = document.querySelector(`#tricks-list [data-trick-id="${id}"]`);
+  if (card) {
+    card.classList.toggle('dash-in', include);
+    card.classList.toggle('dash-out', !include);
+  }
 }
 
 async function setMoveDashboard(id, include) {
@@ -789,6 +796,11 @@ async function setMoveDashboard(id, include) {
   if (!r) return;
   const m = moves.find(x => x.id === id);
   if (m) m.dashboard_include = include ? 1 : 0;
+  const card = document.querySelector(`#moves-list [data-move-id="${id}"]`);
+  if (card) {
+    card.classList.toggle('dash-in', include);
+    card.classList.toggle('dash-out', !include);
+  }
 }
 
 async function deleteTrick(id) {
@@ -828,7 +840,8 @@ function trickCardHTML(t, showActions) {
     ? `<span class="diff-badge diff-${t.difficulty}" title="${escapeHTML(diffName)}">${diffLetter}</span>`
     : '';
   const dashInclude = t.dashboard_include !== 0;
-  return `<div class="${cardClass}" ${cardClick}>
+  const borderClass = showActions ? (dashInclude ? ' dash-in' : ' dash-out') : '';
+  return `<div class="${cardClass}${borderClass}" data-trick-id="${t.id}" ${cardClick}>
     <div class="item-header">
       ${diffBadge}
       <div class="item-name-wrap">
@@ -907,13 +920,30 @@ function filterTricks() {
 // ---- DASHBOARD RENDER ----
 function buildChart(data) {
   const chart = document.getElementById('dash-chart');
+  const dateRow = document.getElementById('freq-date-row');
+  const practicedRow = document.getElementById('freq-practiced-row');
   if (!chart || !data) return;
   const max = Math.max(...data.map(d => d.count), 1);
   chart.innerHTML = data.map((d, i) => {
     const h = d.count ? Math.max(8, Math.round((d.count / max) * 56)) : 4;
     const isToday = i === data.length - 1;
-    return `<div class="chart-bar ${d.count>0?'has-data':''} ${isToday?'today':''}" style="height:${h}px" title="${escapeHTML(d.date + ': ' + d.count + ' session(s)')}"></div>`;
+    const total = (d.tricks || 0) + (d.moves || 0);
+    return `<div class="chart-bar ${d.count>0?'has-data':''} ${isToday?'today':''}" style="height:${h}px" title="${escapeHTML(d.date + ': ' + d.count + ' session(s), ' + total + ' item(s) practiced')}"></div>`;
   }).join('');
+  if (dateRow) {
+    dateRow.innerHTML = data.map((d, i) => {
+      const dt = new Date(d.date + 'T12:00:00');
+      const isToday = i === data.length - 1;
+      const label = isToday ? 'Today' : dt.toLocaleDateString('default', { month: 'short', day: 'numeric' });
+      return `<span class="freq-date-cell${isToday ? ' today' : ''}">${label}</span>`;
+    }).join('');
+  }
+  if (practicedRow) {
+    practicedRow.innerHTML = data.map(d => {
+      const total = (d.tricks || 0) + (d.moves || 0);
+      return `<span class="freq-practiced-cell${total > 0 ? ' has-data' : ''}">${total > 0 ? total : ''}</span>`;
+    }).join('');
+  }
 }
 
 // ---- HISTORY MODAL ----
@@ -1194,7 +1224,158 @@ async function logTimerSession() {
   alert(`Session logged: "${name}" — ${dur} minutes`);
 }
 
+// ---- IDEAS PAGE ----
+const IDEAS_QUOTES = [
+  { quote: "Magic is the only honest profession. A magician promises to deceive you — and he does.", author: "Karl Germain" },
+  { quote: "The secret to a great trick is to practice it until you forget you're doing it.", author: "Dai Vernon" },
+  { quote: "Don't perform a trick unless you can do it in your sleep.", author: "Dai Vernon" },
+  { quote: "A magician who gives away the secret of an illusion is like an actor who tells the audience how the play ends.", author: "David Copperfield" },
+  { quote: "Magic is not about having a trick to show, but about creating a moment people will remember.", author: "Anonymous" },
+  { quote: "The hand is quicker than the eye only when the mind controls both.", author: "Tommy Wonder" },
+  { quote: "Master one effect completely before you move on to the next.", author: "Slydini" },
+  { quote: "Practice in front of a mirror — your toughest audience is yourself.", author: "Anonymous" },
+  { quote: "Every master was once a disaster.", author: "Anonymous" },
+  { quote: "Technique is the slave of expression, not the master.", author: "Tommy Wonder" },
+  { quote: "The best trick is the one you feel most comfortable performing.", author: "Anonymous" },
+  { quote: "Magic lives in the space between what the eye sees and what the mind believes.", author: "Anonymous" },
+];
+
+const IDEAS_TIPS = [
+  { tip: "Record yourself", detail: "Film a run-through and watch it back. You'll spot leaks you never notice in a mirror." },
+  { tip: "Perform for real people", detail: "Even one spectator changes everything. Test new material on friends before strangers." },
+  { tip: "Slow it down", detail: "If a move feels shaky at performance speed, practise it at half speed until it's smooth." },
+  { tip: "Build a set list", detail: "String three solid effects into a routine. Each one should set up the mood for the next." },
+  { tip: "Study the classics", detail: "Read Royal Road, Expert at the Card Table, or Card College. The fundamentals never age." },
+  { tip: "Rest your hands", detail: "Muscle memory consolidates during sleep. Short daily sessions beat marathon cramming." },
+  { tip: "One at a time", detail: "Fully own one trick before adding another. Depth beats breadth in performance magic." },
+  { tip: "Know your angles", detail: "Stand up and check your move from a low angle — audiences are often seated." },
+];
+
+const CARD_SYMBOLS = ['♠', '♥', '♦', '♣'];
+
+// Stable symbol from an id string so it doesn't change on re-render.
+function _ideaSymbol(id) {
+  let h = 0;
+  for (const c of id) h = (h * 31 + c.charCodeAt(0)) & 0xff;
+  return CARD_SYMBOLS[h % 4];
+}
+
+// ---- IDEAS: localStorage helpers ----
+function getIdeasFavs() {
+  try { return new Set(JSON.parse(localStorage.getItem('ideas_favs') || '[]')); }
+  catch { return new Set(); }
+}
+function saveIdeasFavs(set) {
+  localStorage.setItem('ideas_favs', JSON.stringify([...set]));
+}
+function getIdeasCustom() {
+  try { return JSON.parse(localStorage.getItem('ideas_custom') || '[]'); }
+  catch { return []; }
+}
+function saveIdeasCustom(arr) {
+  localStorage.setItem('ideas_custom', JSON.stringify(arr));
+}
+
+// Built-in items shuffled once per session and reused on re-renders.
+let _ideasBuiltIns = null;
+
+function ideaCardHTML(item, isFav) {
+  const id = item.id;
+  const favCls = isFav ? ' active' : '';
+  const favTitle = isFav ? 'Remove from favourites' : 'Add to favourites';
+  const favIcon = isFav ? '★' : '☆';
+  const favBtn = `<button class="idea-fav-btn${favCls}" data-fav-id="${id}" onclick="event.stopPropagation();toggleIdeasFav('${id}')" title="${favTitle}">${favIcon}</button>`;
+
+  if (item.type === 'tip') {
+    return `<div class="idea-card idea-tip">
+      ${favBtn}
+      <div class="idea-tip-label">Tip</div>
+      <div class="idea-tip-title">${escapeHTML(item.tip)}</div>
+      <div class="idea-tip-detail">${escapeHTML(item.detail)}</div>
+    </div>`;
+  }
+  return `<div class="idea-card idea-quote">
+    ${favBtn}
+    <div class="idea-symbol">${_ideaSymbol(id)}</div>
+    <blockquote class="idea-text">"${escapeHTML(item.quote)}"</blockquote>
+    <div class="idea-author">— ${escapeHTML(item.author || 'Anonymous')}</div>
+  </div>`;
+}
+
+function renderIdeas() {
+  const grid = document.getElementById('ideas-grid');
+  if (!grid) return;
+  if (!_ideasBuiltIns) {
+    _ideasBuiltIns = [
+      ...IDEAS_QUOTES.map((q, i) => ({ ...q, id: `q${i}`, type: 'quote' })),
+      ...IDEAS_TIPS.map((t, i)   => ({ ...t, id: `t${i}`, type: 'tip'   })),
+    ].sort(() => Math.random() - 0.5);
+  }
+  const favs   = getIdeasFavs();
+  const custom = getIdeasCustom();
+  const all    = [...custom, ..._ideasBuiltIns];
+  grid.innerHTML = all.map(item => ideaCardHTML(item, favs.has(item.id))).join('');
+}
+
+function toggleIdeasFav(id) {
+  const favs = getIdeasFavs();
+  if (favs.has(id)) favs.delete(id); else favs.add(id);
+  saveIdeasFavs(favs);
+  const isFav = favs.has(id);
+  const btn = document.querySelector(`.idea-fav-btn[data-fav-id="${id}"]`);
+  if (btn) {
+    btn.classList.toggle('active', isFav);
+    btn.title = isFav ? 'Remove from favourites' : 'Add to favourites';
+    btn.textContent = isFav ? '★' : '☆';
+  }
+  renderIdeasNav();
+}
+
+function addIdeaQuote() {
+  const quoteEl  = document.getElementById('ideas-new-quote');
+  const authorEl = document.getElementById('ideas-new-author');
+  const quote = quoteEl.value.trim();
+  if (!quote) return;
+  const id   = `c${Date.now()}`;
+  const item = { id, type: 'quote', quote, author: authorEl.value.trim() || 'You' };
+  const custom = getIdeasCustom();
+  custom.unshift(item);
+  saveIdeasCustom(custom);
+  quoteEl.value  = '';
+  authorEl.value = '';
+  renderIdeas();
+}
+
+function toggleIdeasForm() {
+  const f = document.getElementById('ideas-add-form');
+  if (f) f.style.display = f.style.display === 'none' ? '' : 'none';
+}
+
+function renderIdeasNav() {
+  const container = document.getElementById('ideas-nav-favs');
+  if (!container) return;
+  const favs = getIdeasFavs();
+  if (!favs.size) { container.innerHTML = ''; return; }
+  // Build lookup across all sources
+  const lookup = new Map();
+  IDEAS_QUOTES.forEach((q, i) => lookup.set(`q${i}`, { text: q.quote, author: q.author, type: 'quote' }));
+  IDEAS_TIPS.forEach((t, i)   => lookup.set(`t${i}`, { text: t.tip,   author: t.detail, type: 'tip'   }));
+  getIdeasCustom().forEach(c  => lookup.set(c.id,    { text: c.quote,  author: c.author,  type: 'quote' }));
+  container.innerHTML = [...favs].map(id => {
+    const item = lookup.get(id);
+    if (!item || !item.text) return '';
+    const isTip = item.type === 'tip';
+    const body = isTip
+      ? `<div class="fav-widget-tip-title">${escapeHTML(item.text)}</div>
+         <div class="fav-widget-tip-detail">${escapeHTML(item.author || '')}</div>`
+      : `<div class="fav-widget-quote">"${escapeHTML(item.text)}"</div>
+         <div class="fav-widget-author">— ${escapeHTML(item.author || 'Anonymous')}</div>`;
+    return `<div class="fav-widget${isTip ? ' fav-widget-tip' : ''}" onclick="nav('ideas')">${body}</div>`;
+  }).filter(Boolean).join('');
+}
+
 // ---- INIT ----
 tickClock();
 setInterval(tickClock, 30 * 1000);
 loadAll();
+renderIdeasNav();
